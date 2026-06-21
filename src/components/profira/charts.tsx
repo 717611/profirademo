@@ -24,7 +24,8 @@ export function Sparkline({
     })
     .join(" ");
   const color = positive ? "#E7C98A" : "#b04060";
-  const id = `sp-${Math.random().toString(36).slice(2, 8)}`;
+  const uid = useId();
+  const id = `sp-${uid.replace(/:/g, "")}`;
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
       <defs>
