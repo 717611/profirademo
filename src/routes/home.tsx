@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { ArrowRight, ShieldCheck, BarChart3, FileText, Headphones, ChevronDown, Check } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { GlassPanel, GoldRing, HeroOrb, PremiumButton, useReveal } from "@/components/profira/primitives";
+import { HeroBackdrop } from "@/components/profira/hero-backdrop";
 import { LineChart, Sparkline } from "@/components/profira/charts";
 import { chartSeries, getSeedMarkets } from "@/lib/market-data";
 
@@ -47,24 +48,56 @@ function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   return (
-    <main className="profira-container pt-10">
+    <main className="profira-container pt-6">
       {/* Hero */}
-      <section ref={heroRef} className="flex flex-col items-center text-center">
-        <HeroOrb size={180} />
-        <p className="eyebrow mt-8">Private Wealth Engine</p>
-        <h1 className="text-hero mt-5 max-w-[16ch]">
-          Turn Capital Into Consistent Monthly <span className="gold-italic">Income</span>
-        </h1>
-        <p className="mt-5 max-w-[40ch] text-white/65 text-[15px] leading-relaxed">
-          A disciplined wealth engine designed for investors who value clarity, consistency, and conviction.
-        </p>
-        <div className="mt-8 flex w-full flex-col gap-3">
-          <PremiumButton>Start Investing <ArrowRight className="h-3.5 w-3.5" /></PremiumButton>
-          <PremiumButton variant="outline">View Performance</PremiumButton>
+      <section ref={heroRef} className="relative">
+        {/* Full-bleed animated backdrop */}
+        <div className="absolute inset-x-[-22px] -top-10 bottom-[-32px] md:inset-x-[-32px]">
+          <HeroBackdrop />
+        </div>
+
+        <div className="relative grid grid-cols-1 sm:grid-cols-[42%_1fr] items-center gap-5 sm:gap-7 pt-8 pb-10">
+          {/* Visual */}
+          <div className="relative flex items-center justify-center sm:justify-start">
+            <div className="relative">
+              <svg
+                viewBox="0 0 200 200"
+                className="absolute inset-0 h-full w-full opacity-30"
+                aria-hidden="true"
+              >
+                {[40, 60, 80, 95].map((r) => (
+                  <circle key={r} cx="100" cy="100" r={r} fill="none" stroke="rgba(231,201,138,0.35)" strokeWidth="0.4" />
+                ))}
+                <line x1="0" y1="100" x2="200" y2="100" stroke="rgba(231,201,138,0.18)" strokeWidth="0.3" />
+                <line x1="100" y1="0" x2="100" y2="200" stroke="rgba(231,201,138,0.18)" strokeWidth="0.3" />
+              </svg>
+              <div className="hidden sm:block">
+                <HeroOrb size={200} />
+              </div>
+              <div className="sm:hidden">
+                <HeroOrb size={150} />
+              </div>
+            </div>
+          </div>
+
+          {/* Copy */}
+          <div className="text-center sm:text-left">
+            <p className="eyebrow">Private Wealth Engine</p>
+            <h1 className="text-hero mt-3 max-w-[14ch] mx-auto sm:mx-0">
+              Turn Capital Into Consistent Monthly <span className="gold-italic">Income</span>
+            </h1>
+            <p className="mt-4 max-w-[38ch] mx-auto sm:mx-0 text-white/65 text-[14px] leading-relaxed">
+              A disciplined wealth engine designed for investors who value clarity, consistency, and conviction.
+            </p>
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <PremiumButton>Start Investing <ArrowRight className="h-3.5 w-3.5" /></PremiumButton>
+              <PremiumButton variant="outline">View Performance</PremiumButton>
+            </div>
+          </div>
         </div>
 
         {/* Wealth Status strip */}
-        <GlassPanel className="mt-8 w-full p-0 overflow-hidden">
+        <GlassPanel className="relative mt-2 w-full p-0 overflow-hidden">
           <div className="relative px-5 py-4">
             <div className="absolute inset-0 opacity-40 pointer-events-none">
               <Sparkline data={series.slice(-16)} width={400} height={56} />
