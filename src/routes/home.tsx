@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ArrowRight, ShieldCheck, BarChart3, FileText, Headphones, ChevronDown, Check } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import { Eyebrow, GlassPanel, GoldRing, HeroOrb, PremiumButton, useReveal } from "@/components/profira/primitives";
+import { GlassPanel, GoldRing, HeroOrb, PremiumButton, useReveal } from "@/components/profira/primitives";
 import { LineChart, Sparkline } from "@/components/profira/charts";
 import { chartSeries, getSeedMarkets } from "@/lib/market-data";
 

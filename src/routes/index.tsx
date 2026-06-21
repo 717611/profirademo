@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Lock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { Eyebrow, GlassPanel, HeroOrb, PremiumButton, useReveal } from "@/components/profira/primitives";
+import { GlassPanel, HeroOrb, PremiumButton, useReveal } from "@/components/profira/primitives";
 
 export const Route = createFileRoute("/")({
   head: () => ({
