@@ -43,24 +43,19 @@ function AboutPage() {
       </section>
 
       <section className="mt-16 space-y-6">
-        {cards.map(({ Icon, title, body }) => {
-          const ref = useReveal<HTMLDivElement>();
-          return (
-            <div ref={ref} key={title}>
-              <GlassPanel>
-                <div className="flex items-start gap-4">
-                  <GoldRing size={48}>
-                    <Icon className="h-5 w-5" strokeWidth={1.5} />
-                  </GoldRing>
-                  <div className="flex-1">
-                    <h3 className="font-display text-[22px] text-white">{title}</h3>
-                    <p className="mt-2 text-[14px] text-white/65 leading-relaxed">{body}</p>
-                  </div>
-                </div>
-              </GlassPanel>
+        {cards.map(({ Icon, title, body }) => (
+          <GlassPanel key={title}>
+            <div className="flex items-start gap-4">
+              <GoldRing size={48}>
+                <Icon className="h-5 w-5" strokeWidth={1.5} />
+              </GoldRing>
+              <div className="flex-1">
+                <h3 className="font-display text-[22px] text-white">{title}</h3>
+                <p className="mt-2 text-[14px] text-white/65 leading-relaxed">{body}</p>
+              </div>
             </div>
-          );
-        })}
+          </GlassPanel>
+        ))}
       </section>
 
       <section className="mt-12">
