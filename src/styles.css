@@ -279,6 +279,21 @@
 .ring-spin { animation: ring-spin 24s linear infinite; }
 .pulse-dot { animation: pulse-dot 2.4s ease-in-out infinite; }
 
+@keyframes globe-spin { to { transform: rotate(360deg); } }
+.globe-spin { animation: globe-spin 60s linear infinite; transform-origin: 50% 50%; }
+
+@keyframes chart-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.chart-float { animation: chart-float 7s ease-in-out infinite; }
+
+@keyframes chart-draw {
+  from { stroke-dashoffset: 1200; }
+  to { stroke-dashoffset: 0; }
+}
+.chart-draw { stroke-dasharray: 1200; animation: chart-draw 1.8s ease-out forwards; }
+
 /* Slider override (radix) */
 [data-slot="slider-track"] { background: rgba(255,255,255,0.06) !important; }
 [data-slot="slider-range"] { background: linear-gradient(90deg, #5A1022, #C89A63) !important; }
