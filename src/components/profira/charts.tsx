@@ -1,4 +1,6 @@
 import { useId } from "react";
+
+export function Sparkline({
   data,
   width = 80,
   height = 28,
