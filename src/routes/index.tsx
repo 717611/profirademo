@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Lock, ArrowRight } from "lucide-react";
-import logoAsset from "@/assets/profira-logo.png.asset.json";
-import cardAsset from "@/assets/profira-card-hero.png.asset.json";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
