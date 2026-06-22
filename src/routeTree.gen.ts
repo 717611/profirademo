@@ -9,14 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as MarketsRouteImport } from './routes/markets'
+import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
-const MarketsRoute = MarketsRouteImport.update({
-  id: '/markets',
-  path: '/markets',
+const PortfolioRoute = PortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeRoute = HomeRouteImport.update({
@@ -39,43 +39,43 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
-  '/markets': typeof MarketsRoute
+  '/portfolio': typeof PortfolioRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
-  '/markets': typeof MarketsRoute
+  '/portfolio': typeof PortfolioRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
-  '/markets': typeof MarketsRoute
+  '/portfolio': typeof PortfolioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/home' | '/markets'
+  fullPaths: '/' | '/about' | '/home' | '/portfolio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/home' | '/markets'
-  id: '__root__' | '/' | '/about' | '/home' | '/markets'
+  to: '/' | '/about' | '/home' | '/portfolio'
+  id: '__root__' | '/' | '/about' | '/home' | '/portfolio'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   HomeRoute: typeof HomeRoute
-  MarketsRoute: typeof MarketsRoute
+  PortfolioRoute: typeof PortfolioRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/markets': {
-      id: '/markets'
-      path: '/markets'
-      fullPath: '/markets'
-      preLoaderRoute: typeof MarketsRouteImport
+    '/portfolio': {
+      id: '/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof PortfolioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home': {
@@ -106,7 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   HomeRoute: HomeRoute,
-  MarketsRoute: MarketsRoute,
+  PortfolioRoute: PortfolioRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
