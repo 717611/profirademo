@@ -207,6 +207,48 @@ export type Database = {
         }
         Relationships: []
       }
+      waitlist: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          notes: string | null
+          phone: string
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          notes?: string | null
+          phone: string
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -219,10 +261,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_email_approved: { Args: { _email: string }; Returns: boolean }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "staff"
+      app_role: "admin" | "staff" | "investor"
       document_kind: "agreement" | "invoice"
       investor_status: "pending" | "approved" | "active" | "inactive"
       payout_status: "pending" | "paid"
@@ -353,7 +396,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "staff"],
+      app_role: ["admin", "staff", "investor"],
       document_kind: ["agreement", "invoice"],
       investor_status: ["pending", "approved", "active", "inactive"],
       payout_status: ["pending", "paid"],
