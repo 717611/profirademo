@@ -1,55 +1,83 @@
-## Root cause
+# PROFIRA Back Office — Lean Admin Dashboard
 
-Images on the home/portfolio pages and the homepage credit-card hero are referenced via Lovable's CDN pointer scheme:
+A focused internal admin panel under `/admin/*`, PROFIRA-branded, scoped so it never touches the public marketing site, prerender script, or Vercel config.
 
-```ts
-import logoAsset from "@/assets/profira-logo.png.asset.json";
-import cardAsset from "@/assets/profira-card-hero.png.asset.json";
-<img src={logoAsset.url} />  // → "/__l5e/assets-v1/<uuid>/profira-logo.png"
+## 1. Backend (Lovable Cloud)
+
+Single migration creates:
+
+- `profiles` (id → auth.users, full_name, email, created_at) + signup trigger.
+- `app_role` enum (`admin`, `staff`) + `user_roles` table + `has_role()` security-definer fn.
+- `investor_status` enum (`pending`, `approved`, `active`, `inactive`).
+- `investors` (id, full_name, phone, email, pan, amount, tenure_months, bank_account, ifsc, notes, status default `pending`, created_by, created_at).
+- `funds` (id, name, aum, created_at) — one seed row.
+- `payouts` (id, investor_id, amount, month `date`, status `pending`|`paid`, paid_at).
+- `documents` (id, investor_id, kind `agreement`|`invoice`, serial_no, issued_at, payload jsonb).
+
+All tables: GRANTs to `authenticated` + `service_role`, RLS enabled, policies require `has_role(auth.uid(),'admin') OR has_role(auth.uid(),'staff')` for SELECT/INSERT/UPDATE. First admin granted manually via Cloud SQL after first signup.
+
+Server functions in `src/lib/admin/*.functions.ts` use `requireSupabaseAuth` + role check.
+
+## 2. Routing (client-only, no prerender impact)
+
+```
+src/routes/admin.login.tsx                          /admin/login
+src/routes/_authenticated/route.tsx                 ssr:false gate → /admin/login
+src/routes/_authenticated/admin.tsx                 Topbar + Sidebar + <Outlet/>
+src/routes/_authenticated/admin.index.tsx           /admin            dashboard
+src/routes/_authenticated/admin.onboarding.tsx      onboarding form
+src/routes/_authenticated/admin.investors.tsx       list + filters
+src/routes/_authenticated/admin.investors.$id.tsx   investor detail
+src/routes/_authenticated/admin.funds.tsx           simple list
+src/routes/_authenticated/admin.payouts.tsx         list + Mark Paid
+src/routes/_authenticated/admin.documents.$id.tsx   view + print
+src/routes/_authenticated/admin.settings.tsx
 ```
 
-`/__l5e/assets-v1/...` is served only by Lovable's hosting. On Vercel that path doesn't exist, so every `<img>` 404s and renders blank. The Lovable preview works fine because Lovable's edge handles `/__l5e/`.
+`scripts/prerender.mjs`, `vercel.json`, `vite.config.ts`, and the public marketing routes are untouched.
 
-## Fix
+## 3. PROFIRA branding (scoped to `.admin-scope`)
 
-Host the two images as ordinary static files in `public/`. Both Lovable and Vercel serve everything under `public/` at the URL root with no config, so the same URL works in both environments.
+Tokens added to `src/styles.css` under `.admin-scope` only:
 
-### Steps
+- `--background #070809`, `--surface #14151A`, `--primary #D61F3A`, `--foreground #FFFFFF`, `--muted-foreground #B8B8B8`, `--border` ≈ `#1F2024`.
+- Font: Manrope via `<link>` in `__root.tsx` head; `--font-display: "Manrope", sans-serif` inside scope.
+- Subtle elevation + `@utility glass-card` (backdrop-blur on `--surface`). No blue accents anywhere.
 
-1. **Copy the re-uploaded images into `public/`:**
-   - `/mnt/user-uploads/IMG_20260622_005710-4.png` → `public/profira-logo.png`
-   - `/mnt/user-uploads/file_0000000067f8723081976b2ba24c50ed-2.png` → `public/profira-card-hero.png`
+Shadcn components used throughout (Card, Button, Input, Form, Table, Sheet, Dropdown, Dialog, Badge, Sonner).
 
-2. **Find every reference** to `profira-logo.png.asset.json` and `profira-card-hero.png.asset.json` across the codebase. Confirmed locations to update (will verify with rg in build mode):
-   - `src/routes/index.tsx` — uses both
-   - `src/routes/home.tsx` — uses logo
-   - `src/routes/portfolio.tsx` — uses logo
-   - `src/components/profira/floating-nav.tsx` and any other component that imports the logo
+## 4. Modules
 
-   Replace pattern:
-   ```ts
-   // before
-   import logoAsset from "@/assets/profira-logo.png.asset.json";
-   <img src={logoAsset.url} />
+- **Dashboard** — 3 KPI cards (Total Funds Managed, Active Investors, Pending Payouts) + Recharts LineChart (Fund Growth, 12 months) + BarChart (Monthly Payouts). Aggregates via server fns.
+- **Onboarding** — `react-hook-form` + `zod` (PAN `[A-Z]{5}[0-9]{4}[A-Z]`, IFSC `[A-Z]{4}0[A-Z0-9]{6}`, phone digits, amount/tenure numeric). Inserts investor with `status: 'pending'`; toast + redirect to detail page.
+- **Investors list** — TanStack Table on `md:` and up, stacked cards below `md:`. Global search, status filter (`all`/`pending`/`approved`/`active`/`inactive`), column sort. Status shown as colored Badge.
+- **Investor detail `/admin/investors/$id`** — primary management screen. Sections: profile, investment, notes (inline edit), documents (links to agreement + invoice), created date. Action buttons: Approve (pending→approved), Activate (approved→active), Mark Inactive, View Agreement, View Invoice. State-machine enforced server-side.
+- **Funds** — minimal table: name, AUM, created. Add-fund dialog (admin only).
+- **Payouts** — table: Investor, Amount, Month, Status badge, "Mark as Paid" action. Filter by status + month.
+- **Documents `/admin/documents/$id`** — practical viewer. Two kinds:
+  - *Agreement*: clean card layout with parties, terms, signature line, serial no, issued date (IST via `Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata' })`).
+  - *Invoice*: line items, totals, serial no, issued date.
+  - Single Print button (`window.print()`), print stylesheet hides chrome. No seals, no parchment, no PDF export.
+- **Settings** — profile name (editable), email (read-only), Change Password (disabled placeholder with tooltip), Sign Out.
 
-   // after
-   <img src="/profira-logo.png" />
-   ```
+## 5. UX
 
-3. **Delete the now-unused `.asset.json` pointers** (`src/assets/profira-logo.png.asset.json`, `src/assets/profira-card-hero.png.asset.json`) so nothing accidentally references them. Use the assets delete tool so the CDN copies are also cleaned up.
+- Sidebar: shadcn `Sidebar` collapsible icon rail on desktop, `Sheet` drawer on mobile via Topbar hamburger. Tabs: Dashboard, Onboarding, Investors, Funds, Payouts, Settings (no Documents/Complaints in nav — documents are reached from investor detail).
+- Topbar: PROFIRA wordmark left; admin email + avatar dropdown (Sign out) right.
+- All tables: search/filter bar, no horizontal scroll on mobile (auto-switch to cards).
+- Toasts via Sonner. Light 150ms fade on route change.
 
-4. **Rebuild & verify**
-   - Run `bun run build:static` (the Vercel build).
-   - Confirm `dist/client/profira-logo.png` and `dist/client/profira-card-hero.png` exist (Vite copies `public/*` into the build output).
-   - Grep the prerendered HTML for `/__l5e/` — should return zero matches.
-   - Grep the prerendered HTML for `src="/profira-logo.png"` — should appear in `index.html`, `home/index.html`, `portfolio/index.html`.
+## 6. Files
 
-## Why this is safe
-- **Lovable preview / publish:** unchanged. `public/*` works there too.
-- **Vercel:** images now ship inside `dist/client`, served at predictable paths.
-- **No build config, Nitro, SSR, or routing changes.** Only image references swap from CDN URLs to root-relative paths.
-- **Reversible:** the `.asset.json` deletion is recoverable from chat history if needed.
+- Add: routes listed above; `src/components/admin/{Topbar,Sidebar,KpiCard,StatusBadge,InvestorTable,InvestorCard,AgreementView,InvoiceView,PrintButton}.tsx`; `src/lib/admin/{schemas.ts,*.functions.ts}`; `src/hooks/use-media-query.ts`.
+- Edit: `src/styles.css` (add `.admin-scope` token block + glass utility), `src/routes/__root.tsx` (add Manrope `<link>` only).
+- Migration: single SQL file for tables + enums + RLS + grants + has_role + signup trigger + funds seed row.
+- Untouched: marketing routes, `scripts/prerender.mjs`, `vercel.json`, `vite.config.ts`, build scripts.
 
-## Out of scope
-- No layout, styling, or copy changes.
-- No other asset migrations (only the two images that are broken).
+## 7. Out of scope (deferred to Phase 2)
+
+Complaints, audit logs, 2FA, KYC uploads, file storage, PDF export, payment gateway, advanced fund management, CRM features.
+
+## Approval
+
+On approval: enable Lovable Cloud, run the migration, then build all routes and components in one pass.
