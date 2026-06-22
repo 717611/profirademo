@@ -22,7 +22,6 @@ export const Route = createFileRoute("/signin")({
 
 function SignInPage() {
   const navigate = useNavigate();
-  const fetchRole = useServerFn(getMyRole);
   const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,14 +31,27 @@ function SignInPage() {
 
   async function routeByRole() {
     try {
-      const r = await fetchRole();
-      if (r.primary === "admin" || r.primary === "staff") {
+      const { data: userRes } = await supabase.auth.getUser();
+      const uid = userRes.user?.id;
+      if (!uid) {
+        navigate({ to: "/signin", replace: true });
+        return;
+      }
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", uid);
+      if (error) throw error;
+      const roles = (data ?? []).map((r) => r.role as string);
+      if (roles.includes("admin") || roles.includes("staff")) {
         navigate({ to: "/admin", replace: true });
-      } else {
+      } else if (roles.includes("investor")) {
         navigate({ to: "/home", replace: true });
+      } else {
+        navigate({ to: "/signin", replace: true });
       }
     } catch {
-      navigate({ to: "/home", replace: true });
+      navigate({ to: "/signin", replace: true });
     }
   }
 
