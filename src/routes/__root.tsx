@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
+import { useRouterState } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -133,14 +134,16 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdmin = pathname.startsWith("/admin");
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Atmosphere />
-      <div className="relative z-10 min-h-dvh pb-32">
+      {!isAdmin && <Atmosphere />}
+      <div className={isAdmin ? "min-h-dvh bg-[#070809] text-white" : "relative z-10 min-h-dvh pb-32"}>
         <Outlet />
       </div>
-      <FloatingNav />
+      {!isAdmin && <FloatingNav />}
       <Toaster theme="dark" position="top-center" richColors={false} />
     </QueryClientProvider>
   );
