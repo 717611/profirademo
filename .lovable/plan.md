@@ -1,63 +1,63 @@
-# Home Page Redesign — Fintech Dashboard (Revised)
+## Goal
+Deploy the PROFIRA demo to Vercel with the **smallest possible change set**, preserving Lovable preview, routing, and publish.
 
-Rewrite `src/routes/home.tsx` end-to-end to match the uploaded mobile reference plus the refinements below. Same route, same metadata shape, no router/nav changes. Scope is strictly `src/routes/home.tsx` plus one tiny SVG helper.
+## Approach: inspect first, change minimally
 
-## Visual system (scoped to /home only)
+### Step 1 — Inspect the current build (no code changes)
+Run `bun run build` in the sandbox and examine the output:
+- What directory is produced (`dist/`, `dist/client`, `.output/`, etc.)?
+- Is there a static `index.html` + hashed JS/CSS bundle?
+- Are the four routes (`/`, `/home`, `/portfolio`, `/about`) prerendered as HTML files, or only `index.html` exists (pure SPA)?
+- Is there a Cloudflare Worker bundle (`_worker.js`) or Node server entry that Vercel can't run as-is?
 
-- Background `#070809`, cards `#14151A`, accent `#D61F3A`, success `#22C55E`, text `#FFFFFF`, muted `#B8B8B8`
-- Font: Manrope via `font-sans` only. No serif, no italic, no gradient text, no gold
-- Container: `max-w-[640px] mx-auto px-5`, sections separated by `space-y-5`
-- Cards: `bg-[#14151A] rounded-2xl border border-white/5` with subtle red radial glow where called out
+### Step 2 — Decide based on what we find
 
-## Sections (top → bottom)
+**Case A — Build already produces deployable static assets (likely)**
+The TanStack Start template likely emits a client bundle + prerendered HTML. In that case the only thing Vercel needs is a tiny `vercel.json`:
 
-1. **Sticky header** — PROFIRA logo (28px) left; bell + profile circle (36px, `border border-white/10`) right. `bg-[#070809]/90 backdrop-blur`
+```json
+{
+  "buildCommand": "bun run build",
+  "outputDirectory": "<the directory found in Step 1>",
+  "framework": null,
+  "cleanUrls": true,
+  "rewrites": [{ "source": "/((?!assets/|.*\\..*).*)", "destination": "/index.html" }]
+}
+```
 
-2. **Hero** — Headline "TRADE NOW FOR / MAXIMUM SECURITY & / MAXIMUM RETURNS." (last line `#D61F3A`). 3-line subhead in `#B8B8B8`.
-   - **Hero fintech backdrop (new)**: absolutely-positioned SVG behind text containing faint red candlestick silhouettes + a thin chart line + soft burgundy radial gradient glow. Opacity ~12–18%, `pointer-events-none`, clipped to hero. No orbs/spheres/gold.
+The rewrite is the SPA fallback so `/home`, `/about`, `/portfolio` work on hard refresh. The negative lookahead avoids rewriting static asset URLs.
 
-3. **Primary CTA** — Full-width 52px button, red gradient (`from-[#D61F3A] to-[#FF3355]`), "Start Investing →"
+**No** changes to `vite.config.ts`, Nitro preset, prerender, SSR, or any source file.
 
-4. **Feature chips (updated copy)** — 2×2 grid:
-   - Managed Forex Strategies
-   - Gold Trading Exposure
-   - Monthly Profit Distribution
-   - 24-Hour Onboarding
-   Same card size/styling as before, red-tinted icon square per chip.
+**Case B — Build produces only a Worker bundle with no usable static client**
+Stop and report back to the user before changing anything. Discuss whether to:
+- (b1) eject from the Lovable wrapper to set Nitro `preset: "static"`, or
+- (b2) keep using Lovable Publish instead.
 
-5. **Strategy Performance card (upgraded)** — Richer dashboard component:
-   - Title: "Average Monthly Return"
-   - Primary metric: `+7.0%` (large, white)
-   - Secondary: "Last 12 Months Performance" (muted)
-   - Status pill: green "Trending Up ↗" (`bg-[#22C55E]/12 text-[#22C55E]`)
-   - Mini SVG sparkline (green) on the right, with soft glow
-   - Clear hierarchy: metric left, sparkline right, status below metric
+Do **not** touch Nitro / SSR / prerender config without explicit approval at that point.
 
-6. **Performance chart card** — Inline SVG candlestick chart (~30 deterministic candles, red/white on `#14151A`). Time selectors 1M/3M/6M/1Y/ALL — selected = red pill, others muted. No external chart libs.
+### Step 3 — Verify the four routes
+After adding `vercel.json` (Case A), serve the build output locally (`bunx serve <outputDir>` or equivalent) and confirm:
+- `/` renders the index page
+- `/home` renders home
+- `/portfolio` renders portfolio
+- `/about` renders about
+- Hard refresh on each works (SPA fallback effective)
+- Lovable preview still loads (no regressions — `vercel.json` is ignored by Lovable)
 
-7. **Why Investors Choose PROFIRA (new section)** — Inserted between Performance chart and Calculator. Section title + 3 cards stacked on mobile, optional horizontal row at ≥sm:
-   - Managed Trading — "Professional strategy execution and portfolio management."
-   - Transparent Reporting — "Monthly statements and performance reporting."
-   - Capital Management — "Structured investment management with investor support."
-   Compact cards, small red-glow icons, consistent with system.
+### Step 4 — Document Vercel import steps for the user
+1. Push to GitHub via Lovable.
+2. Import into Vercel → preset "Other".
+3. Vercel reads `vercel.json` — no env vars needed.
+4. Deploy.
 
-8. **Returns calculator** — Glass card. Title "Calculate Your Monthly Returns". shadcn Slider ₹50,000 → ₹50,00,000. Two stat tiles: Monthly Return (`amount × 0.07`) and 6-Month Projection (`× 6`). INR formatted via `Intl.NumberFormat('en-IN')`.
+## Guarantees
+- **Lovable preview**: untouched (`vercel.json` is Vercel-only).
+- **Routing**: unchanged at the app level; SPA fallback added at the host level only.
+- **Publish**: `profirademo.lovable.app` keeps working exactly as today.
+- **Config delta**: one new file (`vercel.json`), zero source-code edits — unless Step 2 lands on Case B, at which point I'll pause and confirm.
 
-9. **Why PROFIRA** — 3 stacked cards: Secure Strategy / Transparent Reporting / Fast Onboarding (icons + red glow). Kept distinct from section 7 by focusing on platform features vs. investor trust.
-
-10. **Investor reviews** — Horizontal scroll-snap carousel of 4 compact cards (5 red stars, short quote, "Verified Investor").
-
-11. **Final CTA card** — "Ready To Invest?" + subhead + full-width red "Become Investor →" button, faint PROFIRA P watermark on the right.
-
-## Technical notes
-
-- Single rewrite: `src/routes/home.tsx`. Keep `createFileRoute("/home")`; update `head()` to fintech copy.
-- Add `src/components/profira/candles.tsx` — pure SVG candlestick chart (no deps).
-- Hero backdrop is an inline SVG inside the hero section (no new file needed).
-- Drop imports: `HeroOrb`, `HeroBackdrop`, `GoldRing`, `LineChart`, `chartSeries`, `getSeedMarkets`, `useReveal`, FAQ state. Reuse `Slider` from `@/components/ui/slider`.
-- All colors inline via Tailwind arbitrary values, scoped to this page only — no global token/style changes, no impact on Portfolio/About/Waitlist.
-- No new npm deps. SPA-safe, Vercel-ready.
-
-## Acceptance
-
-Mobile-first at 390px, max width 640px on larger screens, single fintech-style scroll, hero has subtle candlestick/line backdrop, updated feature chips, upgraded performance card with sparkline + trend pill, new "Why Investors Choose PROFIRA" trust section before the calculator, candlestick chart renders, calculator updates live at 7%, no luxury/gold elements.
+## Out of scope
+- Design/content changes.
+- Adding backend or server functions (the app has none; static deploy is appropriate).
+- Custom domain on Vercel (do that in Vercel dashboard post-deploy).
