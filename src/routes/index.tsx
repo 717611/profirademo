@@ -1,21 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Lock, ArrowRight } from "lucide-react";
-import { toast } from "sonner";
-import { GlassPanel, HeroOrb, PremiumButton, useReveal } from "@/components/profira/primitives";
+import logoAsset from "@/assets/profira-logo.png.asset.json";
+import cardAsset from "@/assets/profira-card-hero.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "PROFIRA — Private Wealth For The Next Generation" },
+      { title: "PROFIRA — Trade Securely, Get Maximum Profit" },
       {
         name: "description",
         content:
-          "Apply for private access to PROFIRA — institutional-grade wealth strategies delivering consistent monthly distributions.",
+          "Access professionally managed market strategies through a simple investment. Join the PROFIRA waitlist.",
       },
-      { property: "og:title", content: "PROFIRA — Apply For Private Access" },
+      { property: "og:title", content: "PROFIRA — Trade Securely, Get Maximum Profit" },
       {
         property: "og:description",
-        content: "Private wealth for the next generation. Applications reviewed within 24 hours.",
+        content:
+          "Access professionally managed market strategies through a simple investment.",
       },
     ],
   }),
@@ -23,88 +24,117 @@ export const Route = createFileRoute("/")({
 });
 
 function Waitlist() {
-  const ref = useReveal<HTMLDivElement>();
   return (
-    <main className="profira-container pt-10 pb-16">
-      {/* Top bar */}
-      <header className="flex items-center justify-between">
-        <div>
-          <div className="font-display text-[22px] tracking-[0.28em] text-[var(--color-champagne)]">
-            PROFIRA
-          </div>
-          <div className="mt-1 eyebrow text-[10px]">Trade · Intelligence · Wealth</div>
-        </div>
-        <span className="glass-panel rounded-full px-3 py-1.5 text-[10px] tracking-[0.22em] uppercase text-white/75 flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-champagne)] pulse-dot" />
-          Private Access
-        </span>
-      </header>
-
-      <div ref={ref} className="mt-12 flex flex-col items-center text-center">
-        <HeroOrb size={240} />
-
-        <p className="eyebrow mt-10">A Private Wealth Platform</p>
-        <h1 className="text-hero mt-5 max-w-[14ch]">
-          Private Wealth For The Next <span className="gold-italic">Generation</span>
-        </h1>
-        <p className="mt-6 max-w-[38ch] text-white/65 text-[15px] leading-relaxed">
-          Institutional-grade strategies, transparent reporting, and consistent monthly
-          distributions — engineered for serious capital.
-        </p>
-
-        {/* Trust metrics — single panel */}
-        <GlassPanel className="mt-10 w-full px-0 py-0">
-          <div className="grid grid-cols-3">
-            {[
-              { v: "₹4.8 Cr+", l: "Capital Deployed" },
-              { v: "320+", l: "Private Investors" },
-              { v: "24+", l: "Months Track" },
-            ].map((m, i) => (
-              <div key={m.l} className={`px-5 py-6 text-center ${i !== 0 ? "border-l border-[rgba(231,201,138,0.14)]" : ""}`}>
-                <div className="font-display text-[22px] gold-text">{m.v}</div>
-                <div className="mt-2 text-[10px] tracking-[0.2em] uppercase text-white/55">{m.l}</div>
-              </div>
-            ))}
-          </div>
-        </GlassPanel>
-
-        <div className="mt-10 flex w-full flex-col gap-3">
-          <PremiumButton onClick={() => toast.success("Application received", { description: "We'll review within 24 hours." })}>
-            Join The Waitlist <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
-          </PremiumButton>
-          <PremiumButton variant="outline" onClick={() => toast("Concierge will be in touch shortly.")}>
-            Become A Customer
-          </PremiumButton>
-        </div>
-
-        <p className="mt-5 flex items-center gap-2 text-[11px] tracking-[0.18em] uppercase text-white/45">
-          <Lock className="h-3 w-3" strokeWidth={1.5} /> Applications reviewed within 24 hours
-        </p>
+    <div className="fixed inset-0 overflow-hidden bg-black font-sans text-white">
+      {/* Background: deep black + soft red ambient from top-right */}
+      <div className="pointer-events-none absolute inset-0">
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(80% 60% at 95% 0%, rgba(220,38,38,0.42) 0%, rgba(220,38,38,0.12) 30%, transparent 65%)",
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(60% 40% at 50% 110%, rgba(220,38,38,0.18) 0%, transparent 70%)",
+          }}
+        />
       </div>
 
-      {/* Footer trust */}
-      <div className="mt-16 flex flex-col items-center text-center">
-        <p className="eyebrow">Trusted By Professionals, Entrepreneurs & Growth Investors</p>
-        <div className="mt-5 flex items-center gap-3">
-          <div className="flex -space-x-2">
-            {["#3a1320", "#5A1022", "#C89A63", "#8a6a3f"].map((c) => (
-              <span
-                key={c}
-                className="inline-block h-7 w-7 rounded-full border border-white/20"
-                style={{ background: c }}
-              />
-            ))}
-          </div>
-          <span className="text-[12px] text-white/65">+316 verified members</span>
-        </div>
-
-        <div className="mt-12 flex items-center justify-between w-full text-[10px] tracking-[0.22em] uppercase text-white/35">
-          <span>01 / 04</span>
-          <Link to="/home" className="flex items-center gap-2 text-[var(--color-champagne)]/80 hover:text-[var(--color-champagne)]">
-            Enter Platform <ArrowRight className="h-3 w-3" />
+      <main
+        className="relative mx-auto flex h-[100dvh] w-full max-w-[480px] flex-col px-5"
+        style={{
+          paddingTop: "max(env(safe-area-inset-top), 14px)",
+          paddingBottom: "max(env(safe-area-inset-bottom), 18px)",
+        }}
+      >
+        {/* Header — ~10% */}
+        <header className="flex shrink-0 items-center justify-between" style={{ height: "10%" }}>
+          <img
+            src={logoAsset.url}
+            alt="PROFIRA"
+            className="h-6 w-auto select-none"
+            draggable={false}
+          />
+          <Link
+            to="/home"
+            className="group flex items-center gap-1.5 rounded-full border border-white/35 bg-white/[0.03] px-3.5 py-1.5 text-[11px] font-medium tracking-wide text-white/90 backdrop-blur-sm transition hover:border-white/60 hover:bg-white/[0.07]"
+          >
+            Enter Platform
+            <ArrowRight className="h-3 w-3 transition group-hover:translate-x-0.5" strokeWidth={2} />
           </Link>
-        </div>
-      </div>
-    </main>
+        </header>
+
+        {/* Hero — flex-1, card artwork */}
+        <section className="relative flex min-h-0 flex-1 items-center justify-center">
+          {/* soft red glow behind card */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(55% 45% at 55% 50%, rgba(220,38,38,0.28) 0%, transparent 70%)",
+            }}
+          />
+          <img
+            src={cardAsset.url}
+            alt="PROFIRA card"
+            className="relative z-10 h-full max-h-full w-auto object-contain animate-[float_6s_ease-in-out_infinite]"
+            draggable={false}
+          />
+        </section>
+
+        {/* Copy — ~18% */}
+        <section className="shrink-0 pt-2" style={{ minHeight: "18%" }}>
+          <h1
+            className="font-sans font-semibold uppercase tracking-tight text-white"
+            style={{ fontSize: "clamp(26px, 8vw, 34px)", lineHeight: 1.08, letterSpacing: "-0.01em" }}
+          >
+            Trade Securely,
+            <br />
+            Get Maximum Profit
+          </h1>
+          <p
+            className="mt-3 max-w-[34ch] text-sm leading-relaxed"
+            style={{ color: "#C8C8C8" }}
+          >
+            Access professionally managed market strategies through a simple investment.
+          </p>
+        </section>
+
+        {/* CTAs — ~22% */}
+        <section className="shrink-0 pt-3" style={{ minHeight: "20%" }}>
+          <div className="flex flex-col gap-3">
+            <Link
+              to="/home"
+              className="group flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white text-[15px] font-semibold text-black transition active:scale-[0.99]"
+            >
+              Join Waitlist
+              <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" strokeWidth={2.25} />
+            </Link>
+            <Link
+              to="/home"
+              className="group flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-white/55 bg-transparent text-[15px] font-medium text-white transition hover:bg-white/[0.04] active:scale-[0.99]"
+            >
+              Become Customer
+              <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" strokeWidth={2} />
+            </Link>
+          </div>
+          <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-white/50">
+            <Lock className="h-3 w-3" strokeWidth={1.75} />
+            Applications reviewed within 24 hours
+          </p>
+        </section>
+      </main>
+
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+      `}</style>
+    </div>
   );
 }
