@@ -96,12 +96,12 @@ export const ensureInvestorDocuments = createServerFn({ method: "POST" })
     const sb = context.supabase;
     const { data: existing } = await sb.from("documents").select("kind").eq("investor_id", data.id);
     const have = new Set((existing ?? []).map((d) => d.kind));
-    const toCreate: Array<{ investor_id: string; kind: "agreement" | "invoice"; serial_no: string; payload: Record<string, unknown> }> = [];
+    const toCreate: Array<{ investor_id: string; kind: "agreement" | "invoice"; serial_no: string; payload: Record<string, never> }> = [];
     const ts = Date.now().toString(36).toUpperCase();
     if (!have.has("agreement")) toCreate.push({ investor_id: data.id, kind: "agreement", serial_no: `AGR-${ts}`, payload: {} });
     if (!have.has("invoice")) toCreate.push({ investor_id: data.id, kind: "invoice", serial_no: `INV-${ts}`, payload: {} });
     if (toCreate.length) {
-      const { error } = await sb.from("documents").insert(toCreate);
+      const { error } = await sb.from("documents").insert(toCreate as never);
       if (error) throw new Error(error.message);
     }
     return { created: toCreate.length };
