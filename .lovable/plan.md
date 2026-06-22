@@ -1,83 +1,131 @@
-# PROFIRA Back Office — Lean Admin Dashboard
+## Goal
 
-A focused internal admin panel under `/admin/*`, PROFIRA-branded, scoped so it never touches the public marketing site, prerender script, or Vercel config.
+Build a role-based investor onboarding flow: public waitlist → admin review → approval → self-signup (gated by approved email) → role-based routing. Marketing pages stay public; only `/portfolio` and `/admin/*` are protected.
 
-## 1. Backend (Lovable Cloud)
+## 1. Roles & routing (role-based, no email checks post-login)
 
-Single migration creates:
+`app_role` enum already has `admin` and `staff` — add `investor`.
 
-- `profiles` (id → auth.users, full_name, email, created_at) + signup trigger.
-- `app_role` enum (`admin`, `staff`) + `user_roles` table + `has_role()` security-definer fn.
-- `investor_status` enum (`pending`, `approved`, `active`, `inactive`).
-- `investors` (id, full_name, phone, email, pan, amount, tenure_months, bank_account, ifsc, notes, status default `pending`, created_by, created_at).
-- `funds` (id, name, aum, created_at) — one seed row.
-- `payouts` (id, investor_id, amount, month `date`, status `pending`|`paid`, paid_at).
-- `documents` (id, investor_id, kind `agreement`|`invoice`, serial_no, issued_at, payload jsonb).
+- **Bootstrap admin (one-time)**: the existing `bootstrap_first_admin` trigger already grants `admin` to the first signup. Extend it: if the new user's email equals `aryanreshav8@gmail.com` and no admin row exists, grant admin. After that, the trigger never runs that branch again — pure role-based from then on.
+- **Default role on signup**: a new `assign_investor_role` trigger on `auth.users AFTER INSERT` grants `investor` to every new user that doesn't already get `admin` from the bootstrap trigger.
+- **Routing after sign-in** (in `/signin`):
+  - call a server fn `getMyRole()` (uses `requireSupabaseAuth`, reads `user_roles`)
+  - `admin` or `staff` → `/admin`
+  - `investor` → `/home`
+  - no role → `/home` with a "pending access" toast (defensive)
 
-All tables: GRANTs to `authenticated` + `service_role`, RLS enabled, policies require `has_role(auth.uid(),'admin') OR has_role(auth.uid(),'staff')` for SELECT/INSERT/UPDATE. First admin granted manually via Cloud SQL after first signup.
+No email comparisons live in routing code.
 
-Server functions in `src/lib/admin/*.functions.ts` use `requireSupabaseAuth` + role check.
+## 2. Public vs protected routes
 
-## 2. Routing (client-only, no prerender impact)
+Public (unchanged SSR, no auth gate): `/`, `/home`, `/about`, `/signin`.
 
-```
-src/routes/admin.login.tsx                          /admin/login
-src/routes/_authenticated/route.tsx                 ssr:false gate → /admin/login
-src/routes/_authenticated/admin.tsx                 Topbar + Sidebar + <Outlet/>
-src/routes/_authenticated/admin.index.tsx           /admin            dashboard
-src/routes/_authenticated/admin.onboarding.tsx      onboarding form
-src/routes/_authenticated/admin.investors.tsx       list + filters
-src/routes/_authenticated/admin.investors.$id.tsx   investor detail
-src/routes/_authenticated/admin.funds.tsx           simple list
-src/routes/_authenticated/admin.payouts.tsx         list + Mark Paid
-src/routes/_authenticated/admin.documents.$id.tsx   view + print
-src/routes/_authenticated/admin.settings.tsx
-```
+Move portfolio under the auth gate:
+- delete top-level `src/routes/portfolio.tsx`
+- create `src/routes/_authenticated/portfolio.tsx` (same content, same `createFileRoute("/_authenticated/portfolio")`)
+- the existing `_authenticated/route.tsx` already redirects unauthenticated users to `/admin/login` — update it to redirect to `/signin` instead (single sign-in surface).
+- Add a tiny role gate inside `/_authenticated/portfolio.tsx`: load role via server fn; if role is `admin`/`staff`/`investor` show portfolio, else show a "Your access is pending" panel. (Defense in depth; RLS on investor data is the real boundary.)
 
-`scripts/prerender.mjs`, `vercel.json`, `vite.config.ts`, and the public marketing routes are untouched.
+The existing `/admin/*` routes already live under `_authenticated/` and check `has_role` server-side in every server fn — keep as is.
 
-## 3. PROFIRA branding (scoped to `.admin-scope`)
+## 3. Database migration
 
-Tokens added to `src/styles.css` under `.admin-scope` only:
+Single migration:
 
-- `--background #070809`, `--surface #14151A`, `--primary #D61F3A`, `--foreground #FFFFFF`, `--muted-foreground #B8B8B8`, `--border` ≈ `#1F2024`.
-- Font: Manrope via `<link>` in `__root.tsx` head; `--font-display: "Manrope", sans-serif` inside scope.
-- Subtle elevation + `@utility glass-card` (backdrop-blur on `--surface`). No blue accents anywhere.
+1. `ALTER TYPE app_role ADD VALUE 'investor';`
+2. `CREATE TABLE public.waitlist`:
+   - `id uuid pk`, `name text`, `email citext unique`, `phone text`, `status text default 'pending' check in ('pending','approved','rejected')`, **`source text default 'website'`**, `notes text`, `approved_by uuid`, `approved_at timestamptz`, `created_at`, `updated_at`.
+   - GRANTs: `INSERT` → `anon, authenticated`; `SELECT, UPDATE, DELETE` → `authenticated`; `ALL` → `service_role`.
+   - RLS policies:
+     - `INSERT` open to `anon`+`authenticated` (public submit).
+     - `SELECT`/`UPDATE`/`DELETE` only `has_role(auth.uid(),'admin') OR has_role(auth.uid(),'staff')`.
+3. `is_email_approved(_email text)` SECURITY DEFINER → `true` iff a `waitlist` row for that email is `approved`.
+4. `prevent_unapproved_signups()` trigger `BEFORE INSERT ON auth.users`: raise exception unless `is_email_approved(NEW.email)` OR (no admin exists yet AND `NEW.email = 'aryanreshav8@gmail.com'`).
+5. `assign_default_role()` trigger `AFTER INSERT ON auth.users`: insert `(NEW.id, 'investor')` into `user_roles` if the bootstrap trigger didn't already grant `admin`.
+6. `touch_updated_at` trigger on `waitlist`.
 
-Shadcn components used throughout (Card, Button, Input, Form, Table, Sheet, Dropdown, Dialog, Badge, Sonner).
+## 4. Landing page (`src/routes/index.tsx`)
 
-## 4. Modules
+- Replace the second CTA: **"Already a customer? Sign in"** → `<Link to="/signin">`.
+- Turn **Join Waitlist** into a button that opens `<WaitlistDialog />` (shadcn `Dialog`, fade+scale transitions).
 
-- **Dashboard** — 3 KPI cards (Total Funds Managed, Active Investors, Pending Payouts) + Recharts LineChart (Fund Growth, 12 months) + BarChart (Monthly Payouts). Aggregates via server fns.
-- **Onboarding** — `react-hook-form` + `zod` (PAN `[A-Z]{5}[0-9]{4}[A-Z]`, IFSC `[A-Z]{4}0[A-Z0-9]{6}`, phone digits, amount/tenure numeric). Inserts investor with `status: 'pending'`; toast + redirect to detail page.
-- **Investors list** — TanStack Table on `md:` and up, stacked cards below `md:`. Global search, status filter (`all`/`pending`/`approved`/`active`/`inactive`), column sort. Status shown as colored Badge.
-- **Investor detail `/admin/investors/$id`** — primary management screen. Sections: profile, investment, notes (inline edit), documents (links to agreement + invoice), created date. Action buttons: Approve (pending→approved), Activate (approved→active), Mark Inactive, View Agreement, View Invoice. State-machine enforced server-side.
-- **Funds** — minimal table: name, AUM, created. Add-fund dialog (admin only).
-- **Payouts** — table: Investor, Amount, Month, Status badge, "Mark as Paid" action. Filter by status + month.
-- **Documents `/admin/documents/$id`** — practical viewer. Two kinds:
-  - *Agreement*: clean card layout with parties, terms, signature line, serial no, issued date (IST via `Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata' })`).
-  - *Invoice*: line items, totals, serial no, issued date.
-  - Single Print button (`window.print()`), print stylesheet hides chrome. No seals, no parchment, no PDF export.
-- **Settings** — profile name (editable), email (read-only), Change Password (disabled placeholder with tooltip), Sign Out.
+## 5. Waitlist dialog
 
-## 5. UX
+`src/components/waitlist-dialog.tsx`:
+- `react-hook-form` + `zod`: `name` (2–80), `email` (valid), `phone` (10–15 digits).
+- Calls public server fn `submitWaitlist({ name, email, phone })` — server fn hardcodes `source: 'website'` (never trust client). Uses the server publishable client; INSERT permitted by the open RLS policy.
+- Duplicate email → "You're already on the list."
+- On success: animated check + auto-close.
 
-- Sidebar: shadcn `Sidebar` collapsible icon rail on desktop, `Sheet` drawer on mobile via Topbar hamburger. Tabs: Dashboard, Onboarding, Investors, Funds, Payouts, Settings (no Documents/Complaints in nav — documents are reached from investor detail).
-- Topbar: PROFIRA wordmark left; admin email + avatar dropdown (Sign out) right.
-- All tables: search/filter bar, no horizontal scroll on mobile (auto-switch to cards).
-- Toasts via Sonner. Light 150ms fade on route change.
+## 6. Sign-in (`src/routes/signin.tsx`)
 
-## 6. Files
+Two tabs (shadcn `Tabs`):
+- **Sign in**: email + password → `supabase.auth.signInWithPassword` → call `getMyRole()` → role-based redirect.
+- **Create account**: full name + email + password → `supabase.auth.signUp({ options: { data: { full_name } } })`. The `prevent_unapproved_signups` trigger blocks it if email isn't approved; surface a friendly "This email hasn't been approved yet — join the waitlist first" with a button that opens the waitlist dialog.
+- After signup: same role-based redirect (`assign_default_role` granted `investor`).
 
-- Add: routes listed above; `src/components/admin/{Topbar,Sidebar,KpiCard,StatusBadge,InvestorTable,InvestorCard,AgreementView,InvoiceView,PrintButton}.tsx`; `src/lib/admin/{schemas.ts,*.functions.ts}`; `src/hooks/use-media-query.ts`.
-- Edit: `src/styles.css` (add `.admin-scope` token block + glass utility), `src/routes/__root.tsx` (add Manrope `<link>` only).
-- Migration: single SQL file for tables + enums + RLS + grants + has_role + signup trigger + funds seed row.
-- Untouched: marketing routes, `scripts/prerender.mjs`, `vercel.json`, `vite.config.ts`, build scripts.
+`src/routes/admin.login.tsx` → 301 to `/signin` (preserves old links).
 
-## 7. Out of scope (deferred to Phase 2)
+## 7. Admin waitlist module
 
-Complaints, audit logs, 2FA, KYC uploads, file storage, PDF export, payment gateway, advanced fund management, CRM features.
+New route `src/routes/_authenticated/admin.waitlist.tsx`:
+- Columns: **Name · Email · Phone · Source · Status · Created**.
+- Filters: status (`all / pending / approved / rejected`) + source (`all / website / instagram / linkedin / referral / manual`) + search by name/email.
+- Row actions: **Approve**, **Reject**, copy email. Mobile = card layout.
 
-## Approval
+Server fns in `src/lib/admin/waitlist.functions.ts` (all `requireSupabaseAuth` + `has_role` check):
+- `listWaitlist({ status?, source?, search? })`
+- `setWaitlistStatus({ id, status })` — sets `approved_by = auth.uid()`, `approved_at = now()` when approving.
 
-On approval: enable Lovable Cloud, run the migration, then build all routes and components in one pass.
+Updates:
+- `src/components/admin/admin-nav.tsx` — add **Waitlist** link with pending-count badge.
+- `src/lib/admin/dashboard.functions.ts` — return `pendingWaitlist` count.
+- `src/routes/_authenticated/admin.index.tsx` — add **Pending Waitlist** KPI card.
+
+## 8. Personalized header
+
+`src/components/auth-pill.tsx`:
+- `useEffect` mount gate (no SSR flicker).
+- Subscribes to `supabase.auth.onAuthStateChange`; when signed in, fetches `profiles.full_name` from a server fn `getMyProfile()` (`requireSupabaseAuth`).
+- Renders pill: `Hi, {full_name}` + dropdown with **Portfolio** (if role allows) and **Sign out**. Never hardcodes names.
+- Mounted on `/`, `/home`, `/about` (top-right, doesn't disturb layout). On `/_authenticated/portfolio` it shows the same pill so the experience is continuous.
+
+## 9. Security guarantees
+
+- All authorization decisions happen server-side (`has_role`, RLS, `requireSupabaseAuth`, triggers).
+- `prevent_unapproved_signups` enforces "no account without an approved waitlist row" at the database layer — cannot be bypassed by client tampering.
+- Role assignment via DB triggers, never from the client.
+- Portfolio data (future tables) will use RLS scoped by role/`auth.uid()` — the route gate is UX only.
+- Client code never reads or branches on emails for authorization.
+
+## Files
+
+**New**
+- `supabase/migrations/<ts>_waitlist_and_roles.sql`
+- `src/components/waitlist-dialog.tsx`
+- `src/components/auth-pill.tsx`
+- `src/routes/signin.tsx`
+- `src/routes/_authenticated/portfolio.tsx` (moved)
+- `src/routes/_authenticated/admin.waitlist.tsx`
+- `src/lib/admin/waitlist.functions.ts`
+- `src/lib/public/waitlist.functions.ts` — `submitWaitlist`
+- `src/lib/auth/role.functions.ts` — `getMyRole`, `getMyProfile`
+
+**Edited**
+- `src/routes/index.tsx` — CTA swap + waitlist dialog
+- `src/routes/admin.login.tsx` — redirect to `/signin`
+- `src/routes/_authenticated/route.tsx` — redirect target → `/signin`
+- `src/components/admin/admin-nav.tsx` — Waitlist nav + badge
+- `src/routes/_authenticated/admin.index.tsx` — Pending Waitlist KPI
+- `src/lib/admin/dashboard.functions.ts` — include pending count
+- `src/routes/home.tsx`, `src/routes/about.tsx` — mount `<AuthPill />`
+
+**Deleted**
+- `src/routes/portfolio.tsx` (replaced by protected version)
+
+## Out of scope (Phase 2)
+
+- Email notifications (admin on new lead; user on approval/rejection)
+- Magic-link invites
+- Captcha / rate limit on public waitlist submit
+- Per-source attribution analytics dashboard
