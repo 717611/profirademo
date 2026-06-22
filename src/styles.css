@@ -71,7 +71,7 @@
   /* Editorial type scale — +35% over default */
   --text-eyebrow-size: 0.72rem;
   --text-eyebrow-tracking: 0.28em;
-  --text-hero: clamp(3.6rem, 12vw, 5.6rem);
+  --text-hero: clamp(2.6rem, 11vw, 5.6rem);
   --text-display: clamp(2.8rem, 9vw, 4rem);
   --text-section: clamp(2rem, 6vw, 2.8rem);
 }
@@ -312,6 +312,7 @@
   padding-inline: 22px;
   position: relative;
   z-index: 1;
+  overflow-x: hidden;
 }
 @media (min-width: 768px) {
   .profira-container { padding-inline: 32px; }

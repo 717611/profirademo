@@ -27,8 +27,8 @@ function AboutPage() {
   const heroRef = useReveal<HTMLDivElement>();
   return (
     <main className="profira-container pt-10">
-      <section ref={heroRef} className="relative">
-        <div className="absolute -top-4 -right-10 opacity-70 pointer-events-none">
+      <section ref={heroRef} className="relative overflow-hidden">
+        <div className="absolute -top-4 -right-4 opacity-70 pointer-events-none">
           <HeroOrb size={160} crescent />
         </div>
         <p className="eyebrow">The Firm</p>
