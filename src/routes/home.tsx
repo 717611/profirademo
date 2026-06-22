@@ -1,375 +1,396 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowRight, ShieldCheck, BarChart3, FileText, Headphones, ChevronDown, Check } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Bell,
+  User,
+  ShieldCheck,
+  TrendingUp,
+  FileText,
+  Clock,
+  Briefcase,
+  LineChart as LineChartIcon,
+  Wallet,
+  Star,
+} from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import { GlassPanel, GoldRing, HeroOrb, PremiumButton, useReveal } from "@/components/profira/primitives";
-import { HeroBackdrop } from "@/components/profira/hero-backdrop";
-import { LineChart, Sparkline } from "@/components/profira/charts";
-import { chartSeries, getSeedMarkets } from "@/lib/market-data";
+import logo from "@/assets/profira-logo.png.asset.json";
+import { CandleChart, HeroCandleBackdrop, MiniSparkline } from "@/components/profira/candles";
 
 export const Route = createFileRoute("/home")({
   head: () => ({
     meta: [
-      { title: "PROFIRA — Turn Capital Into Monthly Income" },
+      { title: "PROFIRA — Modern Investment Platform" },
       {
         name: "description",
         content:
-          "Investment platform engineered for consistent monthly income. Calculate returns, track performance, and access private intelligence.",
+          "Access professionally managed forex and gold investment strategies with transparent monthly reporting and dedicated investor support.",
       },
-      { property: "og:title", content: "PROFIRA Home — Consistent Monthly Income" },
-      { property: "og:description", content: "A premium wealth engine for serious investors." },
+      { property: "og:title", content: "PROFIRA — Modern Investment Platform" },
+      {
+        property: "og:description",
+        content: "Managed forex and gold strategies with monthly profit distribution.",
+      },
     ],
   }),
   component: HomePage,
 });
 
-const features = [
-  { Icon: ShieldCheck, title: "Capital Preservation", body: "Risk is the first metric. Every allocation is sized against drawdown limits before return targets." },
-  { Icon: BarChart3, title: "Professional Execution", body: "A disciplined team and rules-based systems remove emotion from every decision cycle." },
-  { Icon: FileText, title: "Transparent Reporting", body: "Monthly statements, audited returns, and a clear view of where every rupee is working." },
-  { Icon: Headphones, title: "Dedicated Support", body: "A private relationship manager, on call — never a ticket queue." },
+const inr = (n: number) => `₹${new Intl.NumberFormat("en-IN").format(Math.round(n))}`;
+
+const chips = [
+  { Icon: Briefcase, label: "Managed Forex Strategies" },
+  { Icon: LineChartIcon, label: "Gold Trading Exposure" },
+  { Icon: Wallet, label: "Monthly Profit Distribution" },
+  { Icon: Clock, label: "24-Hour Onboarding" },
 ];
 
-const faqs = [
-  { q: "What is the minimum investment?", a: "Private accounts open at ₹10,00,000. Larger allocations unlock concierge bands." },
-  { q: "How are returns distributed?", a: "Net profits are distributed monthly on the 5th, directly to your registered bank account." },
-  { q: "Is my capital locked?", a: "No mandatory lock-in. A 30-day notice ensures orderly exits without market impact." },
-  { q: "How is risk managed?", a: "Position sizing, hard stops, and portfolio-level VaR are reviewed daily by our risk committee." },
+const trustCards = [
+  { Icon: Briefcase, title: "Managed Trading", body: "Professional strategy execution and portfolio management." },
+  { Icon: FileText, title: "Transparent Reporting", body: "Monthly statements and performance reporting." },
+  { Icon: ShieldCheck, title: "Capital Management", body: "Structured investment management with investor support." },
 ];
+
+const whyCards = [
+  { Icon: ShieldCheck, title: "Secure Strategy", body: "Professionally managed market strategies." },
+  { Icon: FileText, title: "Transparent Reporting", body: "Monthly investor reporting and statements." },
+  { Icon: Clock, title: "Fast Onboarding", body: "Applications reviewed within 24 hours." },
+];
+
+const reviews = [
+  { name: "Rahul Sharma", quote: "Simple onboarding and transparent reporting every single month." },
+  { name: "Amit Verma", quote: "The monthly reports are detailed and easy to follow." },
+  { name: "Priya Nair", quote: "Consistent returns and a team that actually responds." },
+  { name: "Karan Mehta", quote: "Best fintech experience I've had for managed investments." },
+];
+
+const ranges = ["1M", "3M", "6M", "1Y", "ALL"] as const;
+type Range = (typeof ranges)[number];
 
 function HomePage() {
-  const heroRef = useReveal<HTMLDivElement>();
-  const [amount, setAmount] = useState(2500000);
-  const monthly = useMemo(() => Math.round(amount * 0.028), [amount]);
+  const [amount, setAmount] = useState(100000);
+  const monthly = useMemo(() => amount * 0.07, [amount]);
   const sixMonth = monthly * 6;
-  const markets = getSeedMarkets();
-  const series = useMemo(() => chartSeries(), []);
-  const [tab, setTab] = useState<"all" | "fx" | "comm" | "idx">("all");
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [range, setRange] = useState<Range>("1M");
+  const candleCount = { "1M": 24, "3M": 32, "6M": 44, "1Y": 56, ALL: 72 }[range];
+  const candleSeed = { "1M": 7, "3M": 13, "6M": 19, "1Y": 23, ALL: 29 }[range];
 
   return (
-    <main className="profira-container pt-6">
-      {/* Hero */}
-      <section ref={heroRef} className="relative">
-        {/* Full-bleed animated backdrop */}
-        <div className="absolute inset-x-[-22px] -top-10 bottom-[-32px] md:inset-x-[-32px]">
-          <HeroBackdrop />
-        </div>
-
-        <div className="relative grid grid-cols-1 sm:grid-cols-[42%_1fr] items-center gap-5 sm:gap-7 pt-8 pb-10">
-          {/* Visual */}
-          <div className="relative flex items-center justify-center sm:justify-start">
-            <div className="relative">
-              <svg
-                viewBox="0 0 200 200"
-                className="absolute inset-0 h-full w-full opacity-30"
-                aria-hidden="true"
-              >
-                {[40, 60, 80, 95].map((r) => (
-                  <circle key={r} cx="100" cy="100" r={r} fill="none" stroke="rgba(231,201,138,0.35)" strokeWidth="0.4" />
-                ))}
-                <line x1="0" y1="100" x2="200" y2="100" stroke="rgba(231,201,138,0.18)" strokeWidth="0.3" />
-                <line x1="100" y1="0" x2="100" y2="200" stroke="rgba(231,201,138,0.18)" strokeWidth="0.3" />
-              </svg>
-              <div className="hidden sm:block">
-                <HeroOrb size={200} />
-              </div>
-              <div className="sm:hidden">
-                <HeroOrb size={150} />
-              </div>
-            </div>
+    <main
+      className="min-h-screen font-sans text-white"
+      style={{ background: "#070809" }}
+    >
+      {/* Sticky header */}
+      <header
+        className="sticky top-0 z-30 backdrop-blur"
+        style={{ background: "rgba(7,8,9,0.85)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+      >
+        <div className="mx-auto flex h-14 max-w-[640px] items-center justify-between px-5">
+          <img src={logo.url} alt="PROFIRA" className="h-7 w-auto" />
+          <div className="flex items-center gap-2">
+            <button
+              aria-label="Notifications"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/80 hover:text-white"
+            >
+              <Bell className="h-4 w-4" />
+              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full" style={{ background: "#D61F3A" }} />
+            </button>
+            <button
+              aria-label="Profile"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/80 hover:text-white"
+            >
+              <User className="h-4 w-4" />
+            </button>
           </div>
+        </div>
+      </header>
 
-          {/* Copy */}
-          <div className="text-center sm:text-left">
-            <p className="eyebrow">Private Wealth Engine</p>
-            <h1 className="text-hero mt-3 max-w-[14ch] mx-auto sm:mx-0">
-              Turn Capital Into Consistent Monthly <span className="gold-italic">Income</span>
+      <div className="mx-auto max-w-[640px] px-5 pb-24 pt-5 space-y-5">
+        {/* Hero */}
+        <section className="relative overflow-hidden rounded-2xl">
+          <div className="pointer-events-none absolute inset-0">
+            <HeroCandleBackdrop />
+          </div>
+          <div className="relative py-6">
+            <h1 className="font-sans text-[34px] sm:text-[40px] font-extrabold leading-[1.05] tracking-tight">
+              TRADE NOW FOR
+              <br />
+              MAXIMUM SECURITY &amp;
+              <br />
+              <span style={{ color: "#D61F3A" }}>MAXIMUM RETURNS.</span>
             </h1>
-            <p className="mt-4 max-w-[38ch] mx-auto sm:mx-0 text-white/65 text-[14px] leading-relaxed">
-              A disciplined wealth engine designed for investors who value clarity, consistency, and conviction.
+            <p className="mt-4 max-w-[36ch] text-[14px] leading-relaxed" style={{ color: "#B8B8B8" }}>
+              Access professionally managed forex and gold investment strategies with transparent monthly reporting and
+              investor support.
             </p>
-            <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <PremiumButton>Start Investing <ArrowRight className="h-3.5 w-3.5" /></PremiumButton>
-              <PremiumButton variant="outline">View Performance</PremiumButton>
-            </div>
           </div>
-        </div>
+        </section>
 
-        {/* Wealth Status strip */}
-        <GlassPanel className="relative mt-2 w-full p-0 overflow-hidden">
-          <div className="relative px-5 py-4">
-            <div className="absolute inset-0 opacity-40 pointer-events-none">
-              <Sparkline data={series.slice(-16)} width={400} height={56} />
-            </div>
-            <div className="relative flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-champagne)] pulse-dot shrink-0" />
-                <div className="min-w-0">
-                  <div className="text-[9px] tracking-[0.24em] uppercase text-white/55">Private Status · Active</div>
-                  <div className="font-display text-[15px] text-white/90 truncate">Wealth Engine — Performing</div>
-                </div>
-              </div>
-              <div className="shrink-0 rounded-full border border-[rgba(231,201,138,0.35)] bg-[rgba(231,201,138,0.06)] px-3 py-1.5 text-[11px] tracking-[0.12em] text-[var(--color-champagne)]">
-                +1.84% MTD
-              </div>
-            </div>
-          </div>
-        </GlassPanel>
-      </section>
+        {/* Primary CTA */}
+        <button
+          className="flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl text-[15px] font-semibold text-white transition active:scale-[0.99]"
+          style={{
+            background: "linear-gradient(135deg, #D61F3A 0%, #FF3355 100%)",
+            boxShadow: "0 12px 32px -12px rgba(214,31,58,0.65)",
+          }}
+        >
+          Start Investing <ArrowRight className="h-4 w-4" />
+        </button>
 
-      {/* Headline metrics — one panel */}
-      <Section>
-        <GlassPanel className="p-0">
-          <div className="grid grid-cols-2">
-            {[
-              { v: "₹4.8 Cr+", l: "Capital Deployed" },
-              { v: "320+", l: "Private Investors" },
-              { v: "24+", l: "Months Track" },
-              { v: "96%", l: "Profitable Months" },
-            ].map((m, i) => (
+        {/* Feature chips */}
+        <section className="grid grid-cols-2 gap-3">
+          {chips.map(({ Icon, label }) => (
+            <div
+              key={label}
+              className="flex items-center gap-3 rounded-2xl border p-3"
+              style={{ background: "#14151A", borderColor: "rgba(255,255,255,0.05)" }}
+            >
               <div
-                key={m.l}
-                className={`px-6 py-7 text-center ${i % 2 === 1 ? "border-l border-[rgba(231,201,138,0.12)]" : ""} ${i >= 2 ? "border-t border-[rgba(231,201,138,0.12)]" : ""}`}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                style={{ background: "rgba(214,31,58,0.14)", color: "#D61F3A" }}
               >
-                <div className="font-display text-[26px] gold-text">{m.v}</div>
-                <div className="mt-2 text-[10px] tracking-[0.2em] uppercase text-white/55">{m.l}</div>
+                <Icon className="h-4 w-4" />
               </div>
-            ))}
-          </div>
-        </GlassPanel>
-      </Section>
-
-      {/* Features — one panel */}
-      <Section eyebrow="What Sets Us Apart" title={<>Built For Investors Who Expect <span className="gold-italic">More</span></>}>
-        <GlassPanel className="p-0">
-          {features.map(({ Icon, title, body }, i) => (
-            <div key={title} className={`flex gap-5 px-6 py-6 ${i !== 0 ? "border-t border-[rgba(231,201,138,0.10)]" : ""}`}>
-              <GoldRing size={44}>
-                <Icon className="h-4 w-4" strokeWidth={1.6} />
-              </GoldRing>
-              <div className="flex-1">
-                <h3 className="font-display text-[18px] text-white">{title}</h3>
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-white/60">{body}</p>
-              </div>
+              <span className="text-[13px] font-medium leading-tight">{label}</span>
             </div>
           ))}
-        </GlassPanel>
-      </Section>
+        </section>
 
-      {/* How it works */}
-      <Section eyebrow="The Process" title="How It Works">
-        <div className="flex flex-col">
-          {[
-            { n: "01", t: "Apply For Access", b: "Submit a brief application. Our team reviews within 24 hours." },
-            { n: "02", t: "Activate Your Account", b: "Sign your private mandate and fund your dedicated account." },
-            { n: "03", t: "Receive Monthly Income", b: "Net profits arrive on the 5th of every month." },
-          ].map((s, i) => (
-            <div key={s.n} className={`py-7 ${i !== 0 ? "border-t border-[rgba(231,201,138,0.12)]" : ""}`}>
-              <div className="font-display text-[40px] gold-text leading-none">{s.n}</div>
-              <h3 className="mt-3 font-display text-[22px] text-white">{s.t}</h3>
-              <p className="mt-2 text-[14px] text-white/60 leading-relaxed">{s.b}</p>
+        {/* Strategy Performance */}
+        <section
+          className="relative overflow-hidden rounded-2xl border p-5"
+          style={{ background: "#14151A", borderColor: "rgba(255,255,255,0.05)" }}
+        >
+          <div
+            className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full"
+            style={{ background: "radial-gradient(closest-side, rgba(34,197,94,0.18), transparent)" }}
+          />
+          <div className="relative flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="text-[12px]" style={{ color: "#B8B8B8" }}>
+                Average Monthly Return
+              </div>
+              <div className="mt-1 text-[40px] font-extrabold leading-none tracking-tight">+7.0%</div>
+              <div className="mt-2 text-[12px]" style={{ color: "#B8B8B8" }}>
+                Last 12 Months Performance
+              </div>
+              <span
+                className="mt-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
+                style={{ background: "rgba(34,197,94,0.14)", color: "#22C55E" }}
+              >
+                <TrendingUp className="h-3 w-3" /> Trending Up
+              </span>
             </div>
-          ))}
-        </div>
-      </Section>
-
-      {/* Calculator */}
-      <Section eyebrow="Income Calculator" title={<>Project Your Monthly <span className="gold-italic">Income</span></>}>
-        <GlassPanel>
-          <div className="flex items-end justify-between">
-            <div>
-              <div className="eyebrow">Investment</div>
-              <div className="font-display text-[34px] mt-1 gold-text">₹{(amount / 100000).toFixed(1)}L</div>
-            </div>
-            <div className="text-right text-[11px] tracking-[0.18em] uppercase text-white/45">
-              Range<br /><span className="text-white/70">₹1L – ₹1Cr</span>
+            <div className="shrink-0">
+              <MiniSparkline width={130} height={56} />
             </div>
           </div>
-          <div className="mt-6">
-            <Slider
-              value={[amount]}
-              min={100000}
-              max={10000000}
-              step={50000}
-              onValueChange={(v) => setAmount(v[0])}
-            />
-          </div>
-          <div className="hairline my-7" />
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <div className="eyebrow">Estimated Monthly</div>
-              <div className="font-display text-[28px] text-white mt-1">₹{monthly.toLocaleString("en-IN")}</div>
-            </div>
-            <div>
-              <div className="eyebrow">6-Month Projection</div>
-              <div className="font-display text-[28px] gold-text mt-1">₹{sixMonth.toLocaleString("en-IN")}</div>
-            </div>
-          </div>
-          <p className="mt-5 text-[11px] text-white/40 leading-relaxed">
-            Projections based on a 24-month trailing average. Past performance does not guarantee future results.
-          </p>
-        </GlassPanel>
-      </Section>
+        </section>
 
-      {/* Historical performance */}
-      <Section eyebrow="Track Record" title="Historical Performance">
-        <GlassPanel>
-          <div className="flex items-end justify-between">
-            <div>
-              <div className="eyebrow">Trailing 12 Months</div>
-              <div className="font-display text-[34px] gold-text mt-1">+38.7%</div>
-            </div>
-            <div className="flex gap-1 text-[10px] tracking-[0.18em] uppercase">
-              {["3M", "6M", "1Y", "ALL"].map((p, i) => (
-                <span key={p} className={`px-2.5 py-1 rounded-full border ${i === 2 ? "border-[rgba(231,201,138,0.5)] text-[var(--color-champagne)]" : "border-white/10 text-white/45"}`}>{p}</span>
+        {/* Performance chart */}
+        <section
+          className="rounded-2xl border p-4"
+          style={{ background: "#14151A", borderColor: "rgba(255,255,255,0.05)" }}
+        >
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-[14px] font-semibold">Strategy Performance</h3>
+            <div className="flex gap-1">
+              {ranges.map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRange(r)}
+                  className="rounded-full px-2.5 py-1 text-[11px] font-semibold transition"
+                  style={
+                    range === r
+                      ? { background: "#D61F3A", color: "#FFFFFF" }
+                      : { background: "transparent", color: "#B8B8B8" }
+                  }
+                >
+                  {r}
+                </button>
               ))}
             </div>
           </div>
-          <div className="mt-6 -mx-2">
-            <LineChart data={series} />
-          </div>
-        </GlassPanel>
-      </Section>
+          <CandleChart count={candleCount} seed={candleSeed} height={180} />
+        </section>
 
-      {/* Market Intelligence preview */}
-      <Section eyebrow="Live Intelligence" title="Market Snapshot">
-        <GlassPanel className="p-0">
-          <div className="flex border-b border-[rgba(231,201,138,0.10)] text-[11px] tracking-[0.16em] uppercase">
-            {([
-              ["all", "All"],
-              ["fx", "Forex"],
-              ["comm", "Commodities"],
-              ["idx", "Indices"],
-            ] as const).map(([k, l]) => (
-              <button
-                key={k}
-                onClick={() => setTab(k)}
-                className={`flex-1 px-3 py-3.5 ${tab === k ? "text-[var(--color-champagne)] border-b border-[var(--color-champagne)]" : "text-white/45"}`}
+        {/* Why Investors Choose PROFIRA */}
+        <section>
+          <h2 className="mb-3 text-[16px] font-bold">Why Investors Choose PROFIRA</h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {trustCards.map(({ Icon, title, body }) => (
+              <div
+                key={title}
+                className="rounded-2xl border p-4"
+                style={{ background: "#14151A", borderColor: "rgba(255,255,255,0.05)" }}
               >
-                {l}
-              </button>
+                <div
+                  className="flex h-9 w-9 items-center justify-center rounded-xl"
+                  style={{ background: "rgba(214,31,58,0.14)", color: "#D61F3A" }}
+                >
+                  <Icon className="h-4 w-4" />
+                </div>
+                <h4 className="mt-3 text-[14px] font-semibold">{title}</h4>
+                <p className="mt-1 text-[12.5px] leading-relaxed" style={{ color: "#B8B8B8" }}>
+                  {body}
+                </p>
+              </div>
             ))}
           </div>
-          {markets.map((m, i) => (
-            <div key={m.symbol} className={`flex items-center gap-3 px-5 py-4 ${i !== 0 ? "border-t border-[rgba(231,201,138,0.08)]" : ""}`}>
-              <div className="flex-1 min-w-0">
-                <div className="text-[13px] text-white truncate">{m.name}</div>
-                <div className="text-[10px] tracking-[0.18em] uppercase text-white/45 mt-0.5">{m.symbol}</div>
+        </section>
+
+        {/* Returns calculator */}
+        <section
+          className="relative overflow-hidden rounded-2xl border p-5"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(20,21,26,0.95) 0%, rgba(20,21,26,0.75) 100%)",
+            borderColor: "rgba(255,255,255,0.06)",
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <div
+            className="pointer-events-none absolute -left-12 -top-12 h-44 w-44 rounded-full"
+            style={{ background: "radial-gradient(closest-side, rgba(214,31,58,0.16), transparent)" }}
+          />
+          <h3 className="relative text-[15px] font-bold">Calculate Your Monthly Returns</h3>
+
+          <div className="relative mt-5 flex items-center justify-between">
+            <span className="text-[12px]" style={{ color: "#B8B8B8" }}>
+              Investment Amount
+            </span>
+            <span className="text-[22px] font-extrabold tracking-tight">{inr(amount)}</span>
+          </div>
+
+          <div className="relative mt-3">
+            <Slider
+              value={[amount]}
+              min={50000}
+              max={5000000}
+              step={10000}
+              onValueChange={(v) => setAmount(v[0])}
+            />
+            <div className="mt-2 flex justify-between text-[11px]" style={{ color: "#B8B8B8" }}>
+              <span>₹50,000</span>
+              <span>₹50,00,000</span>
+            </div>
+          </div>
+
+          <div className="relative mt-5 grid grid-cols-2 gap-3">
+            <div
+              className="rounded-xl border p-3"
+              style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)" }}
+            >
+              <div className="text-[11px]" style={{ color: "#B8B8B8" }}>
+                Monthly Return
               </div>
-              <Sparkline data={m.series} positive={m.change >= 0} />
-              <div className="text-right shrink-0">
-                <div className="text-[13px] text-white">{m.price}</div>
-                <div className={`text-[11px] ${m.change >= 0 ? "text-[var(--color-champagne)]" : "text-rose-300"}`}>
-                  {m.change >= 0 ? "+" : ""}{m.change.toFixed(2)}%
+              <div className="mt-1 text-[20px] font-extrabold" style={{ color: "#D61F3A" }}>
+                {inr(monthly)}
+              </div>
+              <div className="mt-0.5 text-[10px]" style={{ color: "#B8B8B8" }}>
+                (7% per month)
+              </div>
+            </div>
+            <div
+              className="rounded-xl border p-3"
+              style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)" }}
+            >
+              <div className="text-[11px]" style={{ color: "#B8B8B8" }}>
+                6-Month Projection
+              </div>
+              <div className="mt-1 text-[20px] font-extrabold" style={{ color: "#D61F3A" }}>
+                {inr(sixMonth)}
+              </div>
+              <div className="mt-0.5 text-[10px]" style={{ color: "#B8B8B8" }}>
+                (7% per month)
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Why PROFIRA */}
+        <section className="space-y-3">
+          <h2 className="text-[16px] font-bold">Why PROFIRA</h2>
+          {whyCards.map(({ Icon, title, body }) => (
+            <div
+              key={title}
+              className="relative flex gap-3 overflow-hidden rounded-2xl border p-4"
+              style={{ background: "#14151A", borderColor: "rgba(255,255,255,0.05)" }}
+            >
+              <div
+                className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full"
+                style={{ background: "radial-gradient(closest-side, rgba(214,31,58,0.14), transparent)" }}
+              />
+              <div
+                className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                style={{ background: "rgba(214,31,58,0.14)", color: "#D61F3A" }}
+              >
+                <Icon className="h-4 w-4" />
+              </div>
+              <div className="relative">
+                <h4 className="text-[14px] font-semibold">{title}</h4>
+                <p className="mt-1 text-[12.5px] leading-relaxed" style={{ color: "#B8B8B8" }}>
+                  {body}
+                </p>
+              </div>
+            </div>
+          ))}
+        </section>
+
+        {/* Investor reviews */}
+        <section>
+          <h2 className="mb-3 text-[16px] font-bold">What Investors Say</h2>
+          <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {reviews.map((r) => (
+              <div
+                key={r.name}
+                className="w-[260px] shrink-0 snap-start rounded-2xl border p-4"
+                style={{ background: "#14151A", borderColor: "rgba(255,255,255,0.05)" }}
+              >
+                <div className="flex gap-0.5" style={{ color: "#D61F3A" }}>
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <Star key={i} className="h-3.5 w-3.5 fill-current" />
+                  ))}
+                </div>
+                <p className="mt-2 text-[13px] leading-relaxed">{r.quote}</p>
+                <div className="mt-3 text-[12px] font-semibold">{r.name}</div>
+                <div className="text-[11px]" style={{ color: "#B8B8B8" }}>
+                  Verified Investor
                 </div>
               </div>
-            </div>
-          ))}
-        </GlassPanel>
-      </Section>
-
-      {/* Distribution */}
-      <Section eyebrow="Monthly Distribution" title="Your Income Calendar">
-        <GlassPanel className="p-0">
-          <div className="flex items-center justify-between px-6 py-5">
-            <div>
-              <div className="text-[11px] tracking-[0.18em] uppercase text-white/55">June 2026</div>
-              <div className="font-display text-[20px] text-white mt-1">Distribution Completed</div>
-            </div>
-            <span className="flex items-center gap-1.5 text-[11px] text-[var(--color-champagne)]">
-              <Check className="h-3.5 w-3.5" /> Paid
-            </span>
+            ))}
           </div>
-          <div className="hairline mx-6" />
-          <div className="flex items-center justify-between px-6 py-5">
-            <div>
-              <div className="text-[11px] tracking-[0.18em] uppercase text-white/55">Next — 05 July</div>
-              <div className="font-display text-[20px] text-white mt-1">Scheduled</div>
-            </div>
-            <span className="text-[11px] text-white/55">T-14 days</span>
+        </section>
+
+        {/* Final CTA */}
+        <section
+          className="relative overflow-hidden rounded-2xl border p-5"
+          style={{ background: "#14151A", borderColor: "rgba(255,255,255,0.05)" }}
+        >
+          <div
+            className="pointer-events-none absolute -right-6 top-1/2 -translate-y-1/2 text-[120px] font-black leading-none"
+            style={{ color: "rgba(214,31,58,0.12)" }}
+          >
+            P
           </div>
-        </GlassPanel>
-      </Section>
-
-      {/* Testimonial */}
-      <Section eyebrow="Voices">
-        <figure>
-          <blockquote className="font-display italic text-[28px] leading-[1.15] text-white/90">
-            "PROFIRA replaced three advisors and a portfolio manager. The clarity alone is worth the relationship."
-          </blockquote>
-          <figcaption className="mt-6 text-[12px] tracking-[0.18em] uppercase text-white/55">
-            R. Mehta · Founder, Lumen Capital
-          </figcaption>
-        </figure>
-      </Section>
-
-      {/* FAQ */}
-      <Section eyebrow="Common Questions" title="Frequently Asked">
-        <div>
-          {faqs.map((f, i) => (
-            <div key={f.q} className={`py-5 ${i !== 0 ? "border-t border-[rgba(231,201,138,0.10)]" : ""}`}>
-              <button
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="flex w-full items-center justify-between text-left"
-              >
-                <span className="font-display text-[18px] text-white pr-4">{f.q}</span>
-                <ChevronDown className={`h-4 w-4 text-[var(--color-champagne)] transition ${openFaq === i ? "rotate-180" : ""}`} />
-              </button>
-              {openFaq === i && (
-                <p className="mt-3 text-[14px] text-white/65 leading-relaxed">{f.a}</p>
-              )}
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      {/* Final CTA */}
-      <Section>
-        <GlassPanel className="text-center py-12">
-          <p className="eyebrow">Take The Next Step</p>
-          <h2 className="text-display mt-4 max-w-[14ch] mx-auto">
-            Ready To Put Your Capital To <span className="gold-italic">Work?</span>
-          </h2>
-          <div className="mt-8 flex flex-col gap-3">
-            <PremiumButton>Become An Investor <ArrowRight className="h-3.5 w-3.5" /></PremiumButton>
-            <Link to="/portfolio" className="text-[11px] tracking-[0.2em] uppercase text-white/50 hover:text-[var(--color-champagne)]">
-              Explore Intelligence →
-            </Link>
+          <div className="relative">
+            <h3 className="text-[22px] font-extrabold leading-tight">Ready To Invest?</h3>
+            <p className="mt-2 max-w-[34ch] text-[13px] leading-relaxed" style={{ color: "#B8B8B8" }}>
+              Join PROFIRA and access professionally managed investment opportunities.
+            </p>
+            <button
+              className="mt-4 flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl text-[15px] font-semibold text-white transition active:scale-[0.99]"
+              style={{
+                background: "linear-gradient(135deg, #D61F3A 0%, #FF3355 100%)",
+                boxShadow: "0 12px 32px -12px rgba(214,31,58,0.65)",
+              }}
+            >
+              Become Investor <ArrowUpRight className="h-4 w-4" />
+            </button>
           </div>
-        </GlassPanel>
-      </Section>
-
-      {/* Featured */}
-      <section className="mt-20">
-        <p className="eyebrow text-center">As Featured In</p>
-        <div className="mt-5 flex items-center justify-around opacity-40 text-white/70 font-display text-[14px] tracking-[0.18em]">
-          <span>ECONOMIC</span><span>FORBES</span><span>MINT</span><span>BQ</span>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
-  );
-}
-
-function Section({
-  children,
-  eyebrow,
-  title,
-}: {
-  children: React.ReactNode;
-  eyebrow?: string;
-  title?: React.ReactNode;
-}) {
-  const ref = useReveal<HTMLElement>();
-  return (
-    <section ref={ref} className="mt-24">
-      {(eyebrow || title) && (
-        <header className="mb-6 text-center">
-          {eyebrow && <p className="eyebrow">{eyebrow}</p>}
-          {title && <h2 className="text-section mt-3 max-w-[18ch] mx-auto">{title}</h2>}
-        </header>
-      )}
-      {children}
-    </section>
   );
 }
