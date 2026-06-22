@@ -39,15 +39,12 @@ export const setWaitlistStatus = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => setStatusSchema.parse(input))
   .handler(async ({ data, context }) => {
     await assertStaff(context.supabase, context.userId);
-    const patch: Record<string, unknown> = { status: data.status };
-    if (data.status === "approved") {
-      patch.approved_by = context.userId;
-      patch.approved_at = new Date().toISOString();
-    } else {
-      patch.approved_by = null;
-      patch.approved_at = null;
-    }
+    const patch =
+      data.status === "approved"
+        ? { status: data.status, approved_by: context.userId, approved_at: new Date().toISOString() }
+        : { status: data.status, approved_by: null, approved_at: null };
     const { error } = await context.supabase.from("waitlist").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+

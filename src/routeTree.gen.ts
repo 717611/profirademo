@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SigninRouteImport } from './routes/signin'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as AboutRouteImport } from './routes/about'
@@ -25,6 +26,11 @@ import { Route as AuthenticatedAdminFundsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminInvestorsIdRouteImport } from './routes/_authenticated/admin.investors.$id'
 import { Route as AuthenticatedAdminDocumentsIdRouteImport } from './routes/_authenticated/admin.documents.$id'
 
+const SigninRoute = SigninRouteImport.update({
+  id: '/signin',
+  path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PortfolioRoute = PortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
   '/portfolio': typeof PortfolioRoute
+  '/signin': typeof SigninRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/funds': typeof AuthenticatedAdminFundsRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
   '/portfolio': typeof PortfolioRoute
+  '/signin': typeof SigninRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/funds': typeof AuthenticatedAdminFundsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
   '/portfolio': typeof PortfolioRoute
+  '/signin': typeof SigninRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/_authenticated/admin/funds': typeof AuthenticatedAdminFundsRoute
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/home'
     | '/portfolio'
+    | '/signin'
     | '/admin'
     | '/admin/login'
     | '/admin/funds'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/home'
     | '/portfolio'
+    | '/signin'
     | '/admin/login'
     | '/admin/funds'
     | '/admin/investors'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/home'
     | '/portfolio'
+    | '/signin'
     | '/_authenticated/admin'
     | '/admin/login'
     | '/_authenticated/admin/funds'
@@ -212,11 +224,19 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   HomeRoute: typeof HomeRoute
   PortfolioRoute: typeof PortfolioRoute
+  SigninRoute: typeof SigninRoute
   AdminLoginRoute: typeof AdminLoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signin': {
+      id: '/signin'
+      path: '/signin'
+      fullPath: '/signin'
+      preLoaderRoute: typeof SigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portfolio': {
       id: '/portfolio'
       path: '/portfolio'
@@ -380,6 +400,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   HomeRoute: HomeRoute,
   PortfolioRoute: PortfolioRoute,
+  SigninRoute: SigninRoute,
   AdminLoginRoute: AdminLoginRoute,
 }
 export const routeTree = rootRouteImport
