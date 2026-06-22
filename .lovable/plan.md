@@ -1,63 +1,55 @@
-## Goal
-Deploy the PROFIRA demo to Vercel with the **smallest possible change set**, preserving Lovable preview, routing, and publish.
+## Root cause
 
-## Approach: inspect first, change minimally
+Images on the home/portfolio pages and the homepage credit-card hero are referenced via Lovable's CDN pointer scheme:
 
-### Step 1 — Inspect the current build (no code changes)
-Run `bun run build` in the sandbox and examine the output:
-- What directory is produced (`dist/`, `dist/client`, `.output/`, etc.)?
-- Is there a static `index.html` + hashed JS/CSS bundle?
-- Are the four routes (`/`, `/home`, `/portfolio`, `/about`) prerendered as HTML files, or only `index.html` exists (pure SPA)?
-- Is there a Cloudflare Worker bundle (`_worker.js`) or Node server entry that Vercel can't run as-is?
-
-### Step 2 — Decide based on what we find
-
-**Case A — Build already produces deployable static assets (likely)**
-The TanStack Start template likely emits a client bundle + prerendered HTML. In that case the only thing Vercel needs is a tiny `vercel.json`:
-
-```json
-{
-  "buildCommand": "bun run build",
-  "outputDirectory": "<the directory found in Step 1>",
-  "framework": null,
-  "cleanUrls": true,
-  "rewrites": [{ "source": "/((?!assets/|.*\\..*).*)", "destination": "/index.html" }]
-}
+```ts
+import logoAsset from "@/assets/profira-logo.png.asset.json";
+import cardAsset from "@/assets/profira-card-hero.png.asset.json";
+<img src={logoAsset.url} />  // → "/__l5e/assets-v1/<uuid>/profira-logo.png"
 ```
 
-The rewrite is the SPA fallback so `/home`, `/about`, `/portfolio` work on hard refresh. The negative lookahead avoids rewriting static asset URLs.
+`/__l5e/assets-v1/...` is served only by Lovable's hosting. On Vercel that path doesn't exist, so every `<img>` 404s and renders blank. The Lovable preview works fine because Lovable's edge handles `/__l5e/`.
 
-**No** changes to `vite.config.ts`, Nitro preset, prerender, SSR, or any source file.
+## Fix
 
-**Case B — Build produces only a Worker bundle with no usable static client**
-Stop and report back to the user before changing anything. Discuss whether to:
-- (b1) eject from the Lovable wrapper to set Nitro `preset: "static"`, or
-- (b2) keep using Lovable Publish instead.
+Host the two images as ordinary static files in `public/`. Both Lovable and Vercel serve everything under `public/` at the URL root with no config, so the same URL works in both environments.
 
-Do **not** touch Nitro / SSR / prerender config without explicit approval at that point.
+### Steps
 
-### Step 3 — Verify the four routes
-After adding `vercel.json` (Case A), serve the build output locally (`bunx serve <outputDir>` or equivalent) and confirm:
-- `/` renders the index page
-- `/home` renders home
-- `/portfolio` renders portfolio
-- `/about` renders about
-- Hard refresh on each works (SPA fallback effective)
-- Lovable preview still loads (no regressions — `vercel.json` is ignored by Lovable)
+1. **Copy the re-uploaded images into `public/`:**
+   - `/mnt/user-uploads/IMG_20260622_005710-4.png` → `public/profira-logo.png`
+   - `/mnt/user-uploads/file_0000000067f8723081976b2ba24c50ed-2.png` → `public/profira-card-hero.png`
 
-### Step 4 — Document Vercel import steps for the user
-1. Push to GitHub via Lovable.
-2. Import into Vercel → preset "Other".
-3. Vercel reads `vercel.json` — no env vars needed.
-4. Deploy.
+2. **Find every reference** to `profira-logo.png.asset.json` and `profira-card-hero.png.asset.json` across the codebase. Confirmed locations to update (will verify with rg in build mode):
+   - `src/routes/index.tsx` — uses both
+   - `src/routes/home.tsx` — uses logo
+   - `src/routes/portfolio.tsx` — uses logo
+   - `src/components/profira/floating-nav.tsx` and any other component that imports the logo
 
-## Guarantees
-- **Lovable preview**: untouched (`vercel.json` is Vercel-only).
-- **Routing**: unchanged at the app level; SPA fallback added at the host level only.
-- **Publish**: `profirademo.lovable.app` keeps working exactly as today.
-- **Config delta**: one new file (`vercel.json`), zero source-code edits — unless Step 2 lands on Case B, at which point I'll pause and confirm.
+   Replace pattern:
+   ```ts
+   // before
+   import logoAsset from "@/assets/profira-logo.png.asset.json";
+   <img src={logoAsset.url} />
+
+   // after
+   <img src="/profira-logo.png" />
+   ```
+
+3. **Delete the now-unused `.asset.json` pointers** (`src/assets/profira-logo.png.asset.json`, `src/assets/profira-card-hero.png.asset.json`) so nothing accidentally references them. Use the assets delete tool so the CDN copies are also cleaned up.
+
+4. **Rebuild & verify**
+   - Run `bun run build:static` (the Vercel build).
+   - Confirm `dist/client/profira-logo.png` and `dist/client/profira-card-hero.png` exist (Vite copies `public/*` into the build output).
+   - Grep the prerendered HTML for `/__l5e/` — should return zero matches.
+   - Grep the prerendered HTML for `src="/profira-logo.png"` — should appear in `index.html`, `home/index.html`, `portfolio/index.html`.
+
+## Why this is safe
+- **Lovable preview / publish:** unchanged. `public/*` works there too.
+- **Vercel:** images now ship inside `dist/client`, served at predictable paths.
+- **No build config, Nitro, SSR, or routing changes.** Only image references swap from CDN URLs to root-relative paths.
+- **Reversible:** the `.asset.json` deletion is recoverable from chat history if needed.
 
 ## Out of scope
-- Design/content changes.
-- Adding backend or server functions (the app has none; static deploy is appropriate).
-- Custom domain on Vercel (do that in Vercel dashboard post-deploy).
+- No layout, styling, or copy changes.
+- No other asset migrations (only the two images that are broken).
