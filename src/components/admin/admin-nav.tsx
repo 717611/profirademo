@@ -9,14 +9,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const items = [
+const items: Array<{ to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }> = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/onboarding", label: "Onboarding", icon: UserPlus },
   { to: "/admin/investors", label: "Investors", icon: Users },
   { to: "/admin/funds", label: "Funds", icon: Wallet },
   { to: "/admin/payouts", label: "Payouts", icon: Banknote },
   { to: "/admin/settings", label: "Settings", icon: SettingsIcon },
-] as const;
+];
 
 export function AdminNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
