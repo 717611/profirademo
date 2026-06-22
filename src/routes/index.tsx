@@ -53,7 +53,7 @@ function Waitlist() {
         {/* Header — ~10% */}
         <header className="flex shrink-0 items-center justify-between" style={{ height: "10%" }}>
           <img
-            src={logoAsset.url}
+            src="/profira-logo.png"
             alt="PROFIRA"
             className="h-6 w-auto select-none"
             draggable={false}
@@ -78,7 +78,7 @@ function Waitlist() {
             }}
           />
           <img
-            src={cardAsset.url}
+            src="/profira-card-hero.png"
             alt="PROFIRA card"
             className="relative z-10 h-full max-h-full w-auto object-contain animate-[float_6s_ease-in-out_infinite]"
             draggable={false}
