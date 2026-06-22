@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 
-export const Route = createFileRoute("/portfolio")({
+export const Route = createFileRoute("/_authenticated/portfolio")({
   head: () => ({
     meta: [
       { title: "Portfolio — PROFIRA" },
