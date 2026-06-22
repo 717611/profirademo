@@ -8,12 +8,15 @@ export const getDashboardStats = createServerFn({ method: "GET" })
     await assertStaff(context.supabase, context.userId);
     const sb = context.supabase;
 
-    const [fundsRes, investorsRes, payoutsRes, payoutsAllRes] = await Promise.all([
+    const [fundsRes, investorsRes, payoutsRes, payoutsAllRes, waitlistRes] = await Promise.all([
       sb.from("funds").select("aum"),
       sb.from("investors").select("id, status, created_at"),
       sb.from("payouts").select("amount, status"),
       sb.from("payouts").select("amount, month, status"),
+      sb.from("waitlist").select("id", { count: "exact", head: true }).eq("status", "pending"),
     ]);
+    const pendingWaitlist = waitlistRes.count ?? 0;
+
 
     const totalAum = (fundsRes.data ?? []).reduce((s, f) => s + Number(f.aum), 0);
     const activeInvestors = (investorsRes.data ?? []).filter((i) => i.status === "active").length;

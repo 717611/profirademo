@@ -6,17 +6,20 @@ import {
   Wallet,
   Banknote,
   Settings as SettingsIcon,
+  Mailbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items: Array<{ to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }> = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/admin/waitlist", label: "Waitlist", icon: Mailbox },
   { to: "/admin/onboarding", label: "Onboarding", icon: UserPlus },
   { to: "/admin/investors", label: "Investors", icon: Users },
   { to: "/admin/funds", label: "Funds", icon: Wallet },
   { to: "/admin/payouts", label: "Payouts", icon: Banknote },
   { to: "/admin/settings", label: "Settings", icon: SettingsIcon },
 ];
+
 
 export function AdminNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
