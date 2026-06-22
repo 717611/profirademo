@@ -18,6 +18,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminWaitlistRouteImport } from './routes/_authenticated/admin.waitlist'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
 import { Route as AuthenticatedAdminOnboardingRouteImport } from './routes/_authenticated/admin.onboarding'
@@ -70,6 +71,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminWaitlistRoute =
+  AuthenticatedAdminWaitlistRouteImport.update({
+    id: '/waitlist',
+    path: '/waitlist',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminSettingsRoute =
   AuthenticatedAdminSettingsRouteImport.update({
     id: '/settings',
@@ -125,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/waitlist': typeof AuthenticatedAdminWaitlistRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/documents/$id': typeof AuthenticatedAdminDocumentsIdRoute
   '/admin/investors/$id': typeof AuthenticatedAdminInvestorsIdRoute
@@ -141,6 +149,7 @@ export interface FileRoutesByTo {
   '/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/waitlist': typeof AuthenticatedAdminWaitlistRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/documents/$id': typeof AuthenticatedAdminDocumentsIdRoute
   '/admin/investors/$id': typeof AuthenticatedAdminInvestorsIdRoute
@@ -160,6 +169,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/_authenticated/admin/waitlist': typeof AuthenticatedAdminWaitlistRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/documents/$id': typeof AuthenticatedAdminDocumentsIdRoute
   '/_authenticated/admin/investors/$id': typeof AuthenticatedAdminInvestorsIdRoute
@@ -179,6 +189,7 @@ export interface FileRouteTypes {
     | '/admin/onboarding'
     | '/admin/payouts'
     | '/admin/settings'
+    | '/admin/waitlist'
     | '/admin/'
     | '/admin/documents/$id'
     | '/admin/investors/$id'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/admin/onboarding'
     | '/admin/payouts'
     | '/admin/settings'
+    | '/admin/waitlist'
     | '/admin'
     | '/admin/documents/$id'
     | '/admin/investors/$id'
@@ -213,6 +225,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/onboarding'
     | '/_authenticated/admin/payouts'
     | '/_authenticated/admin/settings'
+    | '/_authenticated/admin/waitlist'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/documents/$id'
     | '/_authenticated/admin/investors/$id'
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/waitlist': {
+      id: '/_authenticated/admin/waitlist'
+      path: '/waitlist'
+      fullPath: '/admin/waitlist'
+      preLoaderRoute: typeof AuthenticatedAdminWaitlistRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/settings': {
       id: '/_authenticated/admin/settings'
       path: '/settings'
@@ -364,6 +384,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminOnboardingRoute: typeof AuthenticatedAdminOnboardingRoute
   AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
+  AuthenticatedAdminWaitlistRoute: typeof AuthenticatedAdminWaitlistRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminDocumentsIdRoute: typeof AuthenticatedAdminDocumentsIdRoute
 }
@@ -375,6 +396,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminOnboardingRoute: AuthenticatedAdminOnboardingRoute,
   AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
+  AuthenticatedAdminWaitlistRoute: AuthenticatedAdminWaitlistRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminDocumentsIdRoute: AuthenticatedAdminDocumentsIdRoute,
 }
