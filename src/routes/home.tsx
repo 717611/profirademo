@@ -333,7 +333,7 @@ function HomePage() {
           </h2>
           <div className="mt-8 flex flex-col gap-3">
             <PremiumButton>Become An Investor <ArrowRight className="h-3.5 w-3.5" /></PremiumButton>
-            <Link to="/markets" className="text-[11px] tracking-[0.2em] uppercase text-white/50 hover:text-[var(--color-champagne)]">
+            <Link to="/portfolio" className="text-[11px] tracking-[0.2em] uppercase text-white/50 hover:text-[var(--color-champagne)]">
               Explore Intelligence →
             </Link>
           </div>
