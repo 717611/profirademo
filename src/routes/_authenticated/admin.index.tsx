@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { LineChart, Line, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { Wallet, Users, Banknote } from "lucide-react";
+import { Wallet, Users, Banknote, Mailbox } from "lucide-react";
 import { KpiCard } from "@/components/admin/kpi-card";
 import { getDashboardStats } from "@/lib/admin/dashboard.functions";
 import { fmtINR } from "@/lib/admin/format";
@@ -25,7 +25,7 @@ function DashboardPage() {
         <p className="text-sm text-[#B8B8B8]">Operational overview of funds, investors and payouts.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label="Total Funds Managed"
           value={isLoading ? "…" : fmtINR(data?.totalAum ?? 0)}
@@ -44,7 +44,14 @@ function DashboardPage() {
           hint="Awaiting disbursement"
           icon={<Banknote className="h-4 w-4" />}
         />
+        <KpiCard
+          label="Pending Waitlist"
+          value={isLoading ? "…" : (data?.pendingWaitlist ?? 0).toLocaleString("en-IN")}
+          hint="Awaiting review"
+          icon={<Mailbox className="h-4 w-4" />}
+        />
       </div>
+
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="admin-card p-5">

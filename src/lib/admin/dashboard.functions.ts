@@ -59,7 +59,9 @@ export const getDashboardStats = createServerFn({ method: "GET" })
       totalAum,
       activeInvestors,
       pendingPayouts,
+      pendingWaitlist,
       growthSeries,
       payoutsSeries,
     };
+
   });
