@@ -111,21 +111,23 @@ function Waitlist() {
         {/* CTAs — ~22% */}
         <section className="shrink-0 pt-3" style={{ minHeight: "20%" }}>
           <div className="flex flex-col gap-3">
-            <Link
-              to="/home"
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
               className="group flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white text-[15px] font-semibold text-black transition active:scale-[0.99]"
             >
               Join Waitlist
               <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" strokeWidth={2.25} />
-            </Link>
+            </button>
             <Link
-              to="/home"
+              to="/signin"
               className="group flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-white/55 bg-transparent text-[15px] font-medium text-white transition hover:bg-white/[0.04] active:scale-[0.99]"
             >
-              Become Customer
+              Already a customer? Sign in
               <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" strokeWidth={2} />
             </Link>
           </div>
+
           <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-white/50">
             <Lock className="h-3 w-3" strokeWidth={1.75} />
             Applications reviewed within 24 hours
@@ -139,6 +141,8 @@ function Waitlist() {
           50% { transform: translateY(-8px); }
         }
       `}</style>
+      <WaitlistDialog open={open} onOpenChange={setOpen} />
     </div>
   );
 }
+
