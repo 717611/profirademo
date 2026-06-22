@@ -15,6 +15,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Atmosphere } from "../components/profira/atmosphere";
 import { FloatingNav } from "../components/profira/floating-nav";
+import { AuthPill } from "../components/auth-pill";
+
 
 function NotFoundComponent() {
   return (
@@ -136,6 +138,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdmin = pathname.startsWith("/admin");
+  const showAuthPill = !isAdmin && pathname !== "/" && pathname !== "/signin";
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -143,8 +146,14 @@ function RootComponent() {
       <div className={isAdmin ? "min-h-dvh bg-[#070809] text-white" : "relative z-10 min-h-dvh pb-32"}>
         <Outlet />
       </div>
+      {showAuthPill && (
+        <div className="fixed right-4 top-4 z-50">
+          <AuthPill />
+        </div>
+      )}
       {!isAdmin && <FloatingNav />}
       <Toaster theme="dark" position="top-center" richColors={false} />
     </QueryClientProvider>
   );
 }
+
