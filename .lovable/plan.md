@@ -1,131 +1,86 @@
-## Goal
+## Final Plan — Admin Redirect Fix + Full `/admin/*` Role Gate
 
-Build a role-based investor onboarding flow: public waitlist → admin review → approval → self-signup (gated by approved email) → role-based routing. Marketing pages stay public; only `/portfolio` and `/admin/*` are protected.
+### Context (verified)
 
-## 1. Roles & routing (role-based, no email checks post-login)
+- `aryanreshav8@gmail.com` already has the `admin` role in `public.user_roles`.
+- All four `auth.users` triggers are active (bootstrap admin, profile creator, waitlist gate, default investor).
+- The waitlist gate already blocks unapproved signups at the database level.
 
-`app_role` enum already has `admin` and `staff` — add `investor`.
+The only bug is the post-signin redirect: `getMyRole` serverFn can 401 right after `signInWithPassword` because of a bearer-attachment race, so the `catch` falls through to `/home`. Plus `/admin/*` currently has no role guard.
 
-- **Bootstrap admin (one-time)**: the existing `bootstrap_first_admin` trigger already grants `admin` to the first signup. Extend it: if the new user's email equals `aryanreshav8@gmail.com` and no admin row exists, grant admin. After that, the trigger never runs that branch again — pure role-based from then on.
-- **Default role on signup**: a new `assign_investor_role` trigger on `auth.users AFTER INSERT` grants `investor` to every new user that doesn't already get `admin` from the bootstrap trigger.
-- **Routing after sign-in** (in `/signin`):
-  - call a server fn `getMyRole()` (uses `requireSupabaseAuth`, reads `user_roles`)
-  - `admin` or `staff` → `/admin`
-  - `investor` → `/home`
-  - no role → `/home` with a "pending access" toast (defensive)
+### Changes
 
-No email comparisons live in routing code.
+#### 1. `src/routes/signin.tsx` — explicit role-based routing
 
-## 2. Public vs protected routes
+Replace `routeByRole` to query `user_roles` directly via the browser Supabase client (RLS policy `Users see own roles` already allows it; no serverFn / no bearer race):
 
-Public (unchanged SSR, no auth gate): `/`, `/home`, `/about`, `/signin`.
+```ts
+async function routeByRole() {
+  try {
+    const { data: userRes } = await supabase.auth.getUser();
+    const uid = userRes.user?.id;
+    if (!uid) return navigate({ to: "/signin", replace: true });
 
-Move portfolio under the auth gate:
-- delete top-level `src/routes/portfolio.tsx`
-- create `src/routes/_authenticated/portfolio.tsx` (same content, same `createFileRoute("/_authenticated/portfolio")`)
-- the existing `_authenticated/route.tsx` already redirects unauthenticated users to `/admin/login` — update it to redirect to `/signin` instead (single sign-in surface).
-- Add a tiny role gate inside `/_authenticated/portfolio.tsx`: load role via server fn; if role is `admin`/`staff`/`investor` show portfolio, else show a "Your access is pending" panel. (Defense in depth; RLS on investor data is the real boundary.)
+    const { data, error } = await supabase
+      .from("user_roles").select("role").eq("user_id", uid);
+    if (error) throw error;
+    const roles = (data ?? []).map(r => r.role as string);
 
-The existing `/admin/*` routes already live under `_authenticated/` and check `has_role` server-side in every server fn — keep as is.
+    if (roles.includes("admin") || roles.includes("staff")) {
+      navigate({ to: "/admin", replace: true });   // admin → /admin, staff → /admin
+    } else if (roles.includes("investor")) {
+      navigate({ to: "/home", replace: true });    // investor → /home
+    } else {
+      navigate({ to: "/signin", replace: true });  // unknown/no role → /signin
+    }
+  } catch {
+    navigate({ to: "/signin", replace: true });
+  }
+}
+```
 
-## 3. Database migration
+Drop the now-unused `getMyRole` / `useServerFn` imports from this file. `getMyRole` itself stays available for other call sites.
 
-Single migration:
+#### 2. `src/routes/_authenticated/admin.tsx` — role gate covering ALL `/admin/*`
 
-1. `ALTER TYPE app_role ADD VALUE 'investor';`
-2. `CREATE TABLE public.waitlist`:
-   - `id uuid pk`, `name text`, `email citext unique`, `phone text`, `status text default 'pending' check in ('pending','approved','rejected')`, **`source text default 'website'`**, `notes text`, `approved_by uuid`, `approved_at timestamptz`, `created_at`, `updated_at`.
-   - GRANTs: `INSERT` → `anon, authenticated`; `SELECT, UPDATE, DELETE` → `authenticated`; `ALL` → `service_role`.
-   - RLS policies:
-     - `INSERT` open to `anon`+`authenticated` (public submit).
-     - `SELECT`/`UPDATE`/`DELETE` only `has_role(auth.uid(),'admin') OR has_role(auth.uid(),'staff')`.
-3. `is_email_approved(_email text)` SECURITY DEFINER → `true` iff a `waitlist` row for that email is `approved`.
-4. `prevent_unapproved_signups()` trigger `BEFORE INSERT ON auth.users`: raise exception unless `is_email_approved(NEW.email)` OR (no admin exists yet AND `NEW.email = 'aryanreshav8@gmail.com'`).
-5. `assign_default_role()` trigger `AFTER INSERT ON auth.users`: insert `(NEW.id, 'investor')` into `user_roles` if the bootstrap trigger didn't already grant `admin`.
-6. `touch_updated_at` trigger on `waitlist`.
+Add a client-side `beforeLoad` on the `/_authenticated/admin` layout route. Every admin child route (`/admin`, `/admin/investors`, `/admin/investors/$id`, `/admin/onboarding`, `/admin/payouts`, `/admin/funds`, `/admin/waitlist`, `/admin/documents/$id`, `/admin/settings`) is nested under this layout, so a single gate here protects the entire tree.
 
-## 4. Landing page (`src/routes/index.tsx`)
+```ts
+import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 
-- Replace the second CTA: **"Already a customer? Sign in"** → `<Link to="/signin">`.
-- Turn **Join Waitlist** into a button that opens `<WaitlistDialog />` (shadcn `Dialog`, fade+scale transitions).
+export const Route = createFileRoute("/_authenticated/admin")({
+  beforeLoad: async () => {
+    const { data: userRes } = await supabase.auth.getUser();
+    const uid = userRes.user?.id;
+    if (!uid) throw redirect({ to: "/signin" });
+    const { data } = await supabase
+      .from("user_roles").select("role").eq("user_id", uid);
+    const roles = (data ?? []).map(r => r.role as string);
+    if (roles.includes("admin") || roles.includes("staff")) return;
+    if (roles.includes("investor")) throw redirect({ to: "/home" });
+    throw redirect({ to: "/signin" });
+  },
+  component: AdminLayout,
+});
+```
 
-## 5. Waitlist dialog
+The parent `_authenticated/route.tsx` is `ssr: false`, so this gate runs only in the browser where the session is available — no SSR redirect loops. RLS on every admin table remains the real enforcement boundary.
 
-`src/components/waitlist-dialog.tsx`:
-- `react-hook-form` + `zod`: `name` (2–80), `email` (valid), `phone` (10–15 digits).
-- Calls public server fn `submitWaitlist({ name, email, phone })` — server fn hardcodes `source: 'website'` (never trust client). Uses the server publishable client; INSERT permitted by the open RLS policy.
-- Duplicate email → "You're already on the list."
-- On success: animated check + auto-close.
+### Verification after edits
 
-## 6. Sign-in (`src/routes/signin.tsx`)
+1. Sign in as `aryanreshav8@gmail.com` / `aryan@1416` → lands on `/admin`.
+2. Sign up with an unapproved email → DB trigger fires, toast prompts "Join the waitlist".
+3. Sign in as an investor → lands on `/home`; manually visiting `/admin/investors` (or any other `/admin/*` URL) bounces to `/home`.
+4. Signed-out user visiting `/admin/anything` → `_authenticated` gate sends them to `/signin`.
 
-Two tabs (shadcn `Tabs`):
-- **Sign in**: email + password → `supabase.auth.signInWithPassword` → call `getMyRole()` → role-based redirect.
-- **Create account**: full name + email + password → `supabase.auth.signUp({ options: { data: { full_name } } })`. The `prevent_unapproved_signups` trigger blocks it if email isn't approved; surface a friendly "This email hasn't been approved yet — join the waitlist first" with a button that opens the waitlist dialog.
-- After signup: same role-based redirect (`assign_default_role` granted `investor`).
+### Files touched
 
-`src/routes/admin.login.tsx` → 301 to `/signin` (preserves old links).
+- `src/routes/signin.tsx` — explicit role routing via direct Supabase query.
+- `src/routes/_authenticated/admin.tsx` — `beforeLoad` role gate protecting all `/admin/*` children.
 
-## 7. Admin waitlist module
+### Out of scope
 
-New route `src/routes/_authenticated/admin.waitlist.tsx`:
-- Columns: **Name · Email · Phone · Source · Status · Created**.
-- Filters: status (`all / pending / approved / rejected`) + source (`all / website / instagram / linkedin / referral / manual`) + search by name/email.
-- Row actions: **Approve**, **Reject**, copy email. Mobile = card layout.
-
-Server fns in `src/lib/admin/waitlist.functions.ts` (all `requireSupabaseAuth` + `has_role` check):
-- `listWaitlist({ status?, source?, search? })`
-- `setWaitlistStatus({ id, status })` — sets `approved_by = auth.uid()`, `approved_at = now()` when approving.
-
-Updates:
-- `src/components/admin/admin-nav.tsx` — add **Waitlist** link with pending-count badge.
-- `src/lib/admin/dashboard.functions.ts` — return `pendingWaitlist` count.
-- `src/routes/_authenticated/admin.index.tsx` — add **Pending Waitlist** KPI card.
-
-## 8. Personalized header
-
-`src/components/auth-pill.tsx`:
-- `useEffect` mount gate (no SSR flicker).
-- Subscribes to `supabase.auth.onAuthStateChange`; when signed in, fetches `profiles.full_name` from a server fn `getMyProfile()` (`requireSupabaseAuth`).
-- Renders pill: `Hi, {full_name}` + dropdown with **Portfolio** (if role allows) and **Sign out**. Never hardcodes names.
-- Mounted on `/`, `/home`, `/about` (top-right, doesn't disturb layout). On `/_authenticated/portfolio` it shows the same pill so the experience is continuous.
-
-## 9. Security guarantees
-
-- All authorization decisions happen server-side (`has_role`, RLS, `requireSupabaseAuth`, triggers).
-- `prevent_unapproved_signups` enforces "no account without an approved waitlist row" at the database layer — cannot be bypassed by client tampering.
-- Role assignment via DB triggers, never from the client.
-- Portfolio data (future tables) will use RLS scoped by role/`auth.uid()` — the route gate is UX only.
-- Client code never reads or branches on emails for authorization.
-
-## Files
-
-**New**
-- `supabase/migrations/<ts>_waitlist_and_roles.sql`
-- `src/components/waitlist-dialog.tsx`
-- `src/components/auth-pill.tsx`
-- `src/routes/signin.tsx`
-- `src/routes/_authenticated/portfolio.tsx` (moved)
-- `src/routes/_authenticated/admin.waitlist.tsx`
-- `src/lib/admin/waitlist.functions.ts`
-- `src/lib/public/waitlist.functions.ts` — `submitWaitlist`
-- `src/lib/auth/role.functions.ts` — `getMyRole`, `getMyProfile`
-
-**Edited**
-- `src/routes/index.tsx` — CTA swap + waitlist dialog
-- `src/routes/admin.login.tsx` — redirect to `/signin`
-- `src/routes/_authenticated/route.tsx` — redirect target → `/signin`
-- `src/components/admin/admin-nav.tsx` — Waitlist nav + badge
-- `src/routes/_authenticated/admin.index.tsx` — Pending Waitlist KPI
-- `src/lib/admin/dashboard.functions.ts` — include pending count
-- `src/routes/home.tsx`, `src/routes/about.tsx` — mount `<AuthPill />`
-
-**Deleted**
-- `src/routes/portfolio.tsx` (replaced by protected version)
-
-## Out of scope (Phase 2)
-
-- Email notifications (admin on new lead; user on approval/rejection)
-- Magic-link invites
-- Captcha / rate limit on public waitlist submit
-- Per-source attribution analytics dashboard
+- Auto-generated `src/integrations/supabase/*` files.
+- Database changes (admin role + waitlist trigger already correct).
+- Server-side role middleware (can revisit when more admin serverFns appear).
