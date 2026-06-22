@@ -11,7 +11,7 @@ import {
   PlusCircle,
   User,
 } from "lucide-react";
-import logo from "@/assets/profira-logo.png.asset.json";
+
 
 export const Route = createFileRoute("/portfolio")({
   head: () => ({
@@ -69,7 +69,7 @@ function PortfolioPage() {
 function Header() {
   return (
     <div className="flex items-center justify-between">
-      <img src={logo.url} alt="PROFIRA" className="h-7 w-auto" />
+      <img src="/profira-logo.png" alt="PROFIRA" className="h-7 w-auto" />
       <button
         type="button"
         aria-label="Profile"

@@ -15,7 +15,7 @@ import {
   Star,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import logo from "@/assets/profira-logo.png.asset.json";
+
 import { CandleChart, HeroCandleBackdrop, MiniSparkline } from "@/components/profira/candles";
 
 export const Route = createFileRoute("/home")({
@@ -87,7 +87,7 @@ function HomePage() {
         style={{ background: "rgba(7,8,9,0.85)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}
       >
         <div className="mx-auto flex h-14 max-w-[640px] items-center justify-between px-5">
-          <img src={logo.url} alt="PROFIRA" className="h-7 w-auto" />
+          <img src="/profira-logo.png" alt="PROFIRA" className="h-7 w-auto" />
           <div className="flex items-center gap-2">
             <button
               aria-label="Notifications"
