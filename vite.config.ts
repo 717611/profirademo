@@ -11,21 +11,5 @@ export default defineConfig({
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
-    // Prerender these routes to static HTML for static hosts (e.g. Vercel).
-    // Inside a Lovable build the Cloudflare preset is forced, so this still
-    // emits SSR chunks alongside; it only matters when building outside Lovable
-    // with the nitro override below.
-    prerender: { enabled: true, crawlLinks: true },
-    pages: [
-      { path: "/" },
-      { path: "/home" },
-      { path: "/about" },
-      { path: "/portfolio" },
-    ],
   },
-  // Force the `static` Nitro preset when building OUTSIDE the Lovable sandbox
-  // (e.g. on Vercel). Inside Lovable, preset/output are forced to Cloudflare
-  // by the wrapper, so this override is ignored — Lovable preview & publish
-  // remain unaffected.
-  nitro: { preset: "static" },
 });
