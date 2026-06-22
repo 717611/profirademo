@@ -16,6 +16,14 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
+import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
+import { Route as AuthenticatedAdminOnboardingRouteImport } from './routes/_authenticated/admin.onboarding'
+import { Route as AuthenticatedAdminInvestorsRouteImport } from './routes/_authenticated/admin.investors'
+import { Route as AuthenticatedAdminFundsRouteImport } from './routes/_authenticated/admin.funds'
+import { Route as AuthenticatedAdminInvestorsIdRouteImport } from './routes/_authenticated/admin.investors.$id'
+import { Route as AuthenticatedAdminDocumentsIdRouteImport } from './routes/_authenticated/admin.documents.$id'
 
 const PortfolioRoute = PortfolioRouteImport.update({
   id: '/portfolio',
@@ -51,22 +59,83 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminSettingsRoute =
+  AuthenticatedAdminSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminPayoutsRoute =
+  AuthenticatedAdminPayoutsRouteImport.update({
+    id: '/payouts',
+    path: '/payouts',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminOnboardingRoute =
+  AuthenticatedAdminOnboardingRouteImport.update({
+    id: '/onboarding',
+    path: '/onboarding',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminInvestorsRoute =
+  AuthenticatedAdminInvestorsRouteImport.update({
+    id: '/investors',
+    path: '/investors',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminFundsRoute = AuthenticatedAdminFundsRouteImport.update({
+  id: '/funds',
+  path: '/funds',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminInvestorsIdRoute =
+  AuthenticatedAdminInvestorsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAdminInvestorsRoute,
+  } as any)
+const AuthenticatedAdminDocumentsIdRoute =
+  AuthenticatedAdminDocumentsIdRouteImport.update({
+    id: '/documents/$id',
+    path: '/documents/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
   '/portfolio': typeof PortfolioRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/admin/funds': typeof AuthenticatedAdminFundsRoute
+  '/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
+  '/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
+  '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/documents/$id': typeof AuthenticatedAdminDocumentsIdRoute
+  '/admin/investors/$id': typeof AuthenticatedAdminInvestorsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
   '/portfolio': typeof PortfolioRoute
-  '/admin': typeof AuthenticatedAdminRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/funds': typeof AuthenticatedAdminFundsRoute
+  '/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
+  '/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
+  '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/documents/$id': typeof AuthenticatedAdminDocumentsIdRoute
+  '/admin/investors/$id': typeof AuthenticatedAdminInvestorsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -75,14 +144,49 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
   '/portfolio': typeof PortfolioRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/_authenticated/admin/funds': typeof AuthenticatedAdminFundsRoute
+  '/_authenticated/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
+  '/_authenticated/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
+  '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/documents/$id': typeof AuthenticatedAdminDocumentsIdRoute
+  '/_authenticated/admin/investors/$id': typeof AuthenticatedAdminInvestorsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/home' | '/portfolio' | '/admin' | '/admin/login'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/home'
+    | '/portfolio'
+    | '/admin'
+    | '/admin/login'
+    | '/admin/funds'
+    | '/admin/investors'
+    | '/admin/onboarding'
+    | '/admin/payouts'
+    | '/admin/settings'
+    | '/admin/'
+    | '/admin/documents/$id'
+    | '/admin/investors/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/home' | '/portfolio' | '/admin' | '/admin/login'
+  to:
+    | '/'
+    | '/about'
+    | '/home'
+    | '/portfolio'
+    | '/admin/login'
+    | '/admin/funds'
+    | '/admin/investors'
+    | '/admin/onboarding'
+    | '/admin/payouts'
+    | '/admin/settings'
+    | '/admin'
+    | '/admin/documents/$id'
+    | '/admin/investors/$id'
   id:
     | '__root__'
     | '/'
@@ -92,6 +196,14 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/_authenticated/admin'
     | '/admin/login'
+    | '/_authenticated/admin/funds'
+    | '/_authenticated/admin/investors'
+    | '/_authenticated/admin/onboarding'
+    | '/_authenticated/admin/payouts'
+    | '/_authenticated/admin/settings'
+    | '/_authenticated/admin/'
+    | '/_authenticated/admin/documents/$id'
+    | '/_authenticated/admin/investors/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -154,15 +266,109 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/settings': {
+      id: '/_authenticated/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/payouts': {
+      id: '/_authenticated/admin/payouts'
+      path: '/payouts'
+      fullPath: '/admin/payouts'
+      preLoaderRoute: typeof AuthenticatedAdminPayoutsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/onboarding': {
+      id: '/_authenticated/admin/onboarding'
+      path: '/onboarding'
+      fullPath: '/admin/onboarding'
+      preLoaderRoute: typeof AuthenticatedAdminOnboardingRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/investors': {
+      id: '/_authenticated/admin/investors'
+      path: '/investors'
+      fullPath: '/admin/investors'
+      preLoaderRoute: typeof AuthenticatedAdminInvestorsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/funds': {
+      id: '/_authenticated/admin/funds'
+      path: '/funds'
+      fullPath: '/admin/funds'
+      preLoaderRoute: typeof AuthenticatedAdminFundsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/investors/$id': {
+      id: '/_authenticated/admin/investors/$id'
+      path: '/$id'
+      fullPath: '/admin/investors/$id'
+      preLoaderRoute: typeof AuthenticatedAdminInvestorsIdRouteImport
+      parentRoute: typeof AuthenticatedAdminInvestorsRoute
+    }
+    '/_authenticated/admin/documents/$id': {
+      id: '/_authenticated/admin/documents/$id'
+      path: '/documents/$id'
+      fullPath: '/admin/documents/$id'
+      preLoaderRoute: typeof AuthenticatedAdminDocumentsIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
+interface AuthenticatedAdminInvestorsRouteChildren {
+  AuthenticatedAdminInvestorsIdRoute: typeof AuthenticatedAdminInvestorsIdRoute
+}
+
+const AuthenticatedAdminInvestorsRouteChildren: AuthenticatedAdminInvestorsRouteChildren =
+  {
+    AuthenticatedAdminInvestorsIdRoute: AuthenticatedAdminInvestorsIdRoute,
+  }
+
+const AuthenticatedAdminInvestorsRouteWithChildren =
+  AuthenticatedAdminInvestorsRoute._addFileChildren(
+    AuthenticatedAdminInvestorsRouteChildren,
+  )
+
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminFundsRoute: typeof AuthenticatedAdminFundsRoute
+  AuthenticatedAdminInvestorsRoute: typeof AuthenticatedAdminInvestorsRouteWithChildren
+  AuthenticatedAdminOnboardingRoute: typeof AuthenticatedAdminOnboardingRoute
+  AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
+  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminDocumentsIdRoute: typeof AuthenticatedAdminDocumentsIdRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminFundsRoute: AuthenticatedAdminFundsRoute,
+  AuthenticatedAdminInvestorsRoute:
+    AuthenticatedAdminInvestorsRouteWithChildren,
+  AuthenticatedAdminOnboardingRoute: AuthenticatedAdminOnboardingRoute,
+  AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
+  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminDocumentsIdRoute: AuthenticatedAdminDocumentsIdRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =

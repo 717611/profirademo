@@ -1,6 +1,6 @@
-import { createFileRoute, useServerFn } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn as useServerFnRS } from "@tanstack/react-start";
+import { useServerFn } from "@tanstack/react-start";
 import { LineChart, Line, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { Wallet, Users, Banknote } from "lucide-react";
 import { KpiCard } from "@/components/admin/kpi-card";
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 });
 
 function DashboardPage() {
-  const fetchStats = useServerFnRS(getDashboardStats);
+  const fetchStats = useServerFn(getDashboardStats);
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "stats"],
     queryFn: () => fetchStats(),
