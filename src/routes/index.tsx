@@ -8,13 +8,13 @@ import { WaitlistDialog } from "@/components/waitlist-dialog";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "PROFIRA — Trade Securely, Get Maximum Profit" },
+      { title: "PROFIRA — 100% Secured & Guaranteed Profit" },
       {
         name: "description",
         content:
-          "Access professionally managed market strategies through a simple investment. Join the PROFIRA waitlist.",
+          "Start investing from ₹10,000 with professionally managed forex and gold investment strategies designed for consistent monthly returns.",
       },
-      { property: "og:title", content: "PROFIRA — Trade Securely, Get Maximum Profit" },
+      { property: "og:title", content: "PROFIRA — 100% Secured & Guaranteed Profit" },
       {
         property: "og:description",
         content:
@@ -96,15 +96,17 @@ function Waitlist() {
             className="font-sans font-semibold uppercase tracking-tight text-white"
             style={{ fontSize: "clamp(26px, 8vw, 34px)", lineHeight: 1.08, letterSpacing: "-0.01em" }}
           >
-            Trade Securely,
+            100% Secured &amp;
             <br />
-            Get Maximum Profit
+            Guaranteed Profit.
+            <br />
+            Invest Now.
           </h1>
           <p
             className="mt-3 max-w-[34ch] text-sm leading-relaxed"
             style={{ color: "#C8C8C8" }}
           >
-            Access professionally managed market strategies through a simple investment.
+            Start investing from ₹10,000 with professionally managed forex and gold investment strategies designed for consistent monthly returns.
           </p>
         </section>
 

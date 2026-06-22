@@ -69,8 +69,8 @@ const ranges = ["1M", "3M", "6M", "1Y", "ALL"] as const;
 type Range = (typeof ranges)[number];
 
 function HomePage() {
-  const [amount, setAmount] = useState(100000);
-  const monthly = useMemo(() => amount * 0.07, [amount]);
+  const [amount, setAmount] = useState(10000);
+  const monthly = useMemo(() => amount * 0.10, [amount]);
   const sixMonth = monthly * 6;
   const [range, setRange] = useState<Range>("1M");
   const candleCount = { "1M": 24, "3M": 32, "6M": 44, "1Y": 56, ALL: 72 }[range];
@@ -114,15 +114,14 @@ function HomePage() {
           </div>
           <div className="relative py-6">
             <h1 className="font-sans text-[34px] sm:text-[40px] font-extrabold leading-[1.05] tracking-tight">
-              TRADE NOW FOR
+              START WITH ₹10,000 &amp;
               <br />
-              MAXIMUM SECURITY &amp;
+              GET 60% RETURNS
               <br />
-              <span style={{ color: "#D61F3A" }}>MAXIMUM RETURNS.</span>
+              <span style={{ color: "#D61F3A" }}>IN 6 MONTHS.</span>
             </h1>
             <p className="mt-4 max-w-[36ch] text-[14px] leading-relaxed" style={{ color: "#B8B8B8" }}>
-              Access professionally managed forex and gold investment strategies with transparent monthly reporting and
-              investor support.
+              Access professionally managed forex and gold investment strategies with transparent monthly reporting and dedicated investor support.
             </p>
           </div>
         </section>
@@ -171,7 +170,7 @@ function HomePage() {
               <div className="text-[12px]" style={{ color: "#B8B8B8" }}>
                 Average Monthly Return
               </div>
-              <div className="mt-1 text-[40px] font-extrabold leading-none tracking-tight">+7.0%</div>
+              <div className="mt-1 text-[40px] font-extrabold leading-none tracking-tight">+10.0%</div>
               <div className="mt-2 text-[12px]" style={{ color: "#B8B8B8" }}>
                 Last 12 Months Performance
               </div>
@@ -266,13 +265,13 @@ function HomePage() {
           <div className="relative mt-3">
             <Slider
               value={[amount]}
-              min={50000}
+              min={10000}
               max={5000000}
               step={10000}
               onValueChange={(v) => setAmount(v[0])}
             />
             <div className="mt-2 flex justify-between text-[11px]" style={{ color: "#B8B8B8" }}>
-              <span>₹50,000</span>
+              <span>₹10,000</span>
               <span>₹50,00,000</span>
             </div>
           </div>
@@ -289,7 +288,7 @@ function HomePage() {
                 {inr(monthly)}
               </div>
               <div className="mt-0.5 text-[10px]" style={{ color: "#B8B8B8" }}>
-                (7% per month)
+                (10% per month)
               </div>
             </div>
             <div
@@ -303,7 +302,7 @@ function HomePage() {
                 {inr(sixMonth)}
               </div>
               <div className="mt-0.5 text-[10px]" style={{ color: "#B8B8B8" }}>
-                (7% per month)
+                (10% per month)
               </div>
             </div>
           </div>
