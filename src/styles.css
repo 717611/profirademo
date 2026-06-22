@@ -312,6 +312,7 @@
   padding-inline: 22px;
   position: relative;
   z-index: 1;
+  overflow-x: hidden;
 }
 @media (min-width: 768px) {
   .profira-container { padding-inline: 32px; }
