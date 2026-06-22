@@ -9,14 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PortfolioRouteImport } from './routes/portfolio'
+import { Route as SigninRouteImport } from './routes/signin'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminWaitlistRouteImport } from './routes/_authenticated/admin.waitlist'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
 import { Route as AuthenticatedAdminOnboardingRouteImport } from './routes/_authenticated/admin.onboarding'
@@ -25,9 +27,9 @@ import { Route as AuthenticatedAdminFundsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminInvestorsIdRouteImport } from './routes/_authenticated/admin.investors.$id'
 import { Route as AuthenticatedAdminDocumentsIdRouteImport } from './routes/_authenticated/admin.documents.$id'
 
-const PortfolioRoute = PortfolioRouteImport.update({
-  id: '/portfolio',
-  path: '/portfolio',
+const SigninRoute = SigninRouteImport.update({
+  id: '/signin',
+  path: '/signin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeRoute = HomeRouteImport.update({
@@ -54,6 +56,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPortfolioRoute = AuthenticatedPortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -64,6 +71,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminWaitlistRoute =
+  AuthenticatedAdminWaitlistRouteImport.update({
+    id: '/waitlist',
+    path: '/waitlist',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminSettingsRoute =
   AuthenticatedAdminSettingsRouteImport.update({
     id: '/settings',
@@ -110,14 +123,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
-  '/portfolio': typeof PortfolioRoute
+  '/signin': typeof SigninRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/portfolio': typeof AuthenticatedPortfolioRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/funds': typeof AuthenticatedAdminFundsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
   '/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/waitlist': typeof AuthenticatedAdminWaitlistRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/documents/$id': typeof AuthenticatedAdminDocumentsIdRoute
   '/admin/investors/$id': typeof AuthenticatedAdminInvestorsIdRoute
@@ -126,13 +141,15 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
-  '/portfolio': typeof PortfolioRoute
+  '/signin': typeof SigninRoute
+  '/portfolio': typeof AuthenticatedPortfolioRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/funds': typeof AuthenticatedAdminFundsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
   '/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/waitlist': typeof AuthenticatedAdminWaitlistRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/documents/$id': typeof AuthenticatedAdminDocumentsIdRoute
   '/admin/investors/$id': typeof AuthenticatedAdminInvestorsIdRoute
@@ -143,14 +160,16 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
-  '/portfolio': typeof PortfolioRoute
+  '/signin': typeof SigninRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
   '/admin/login': typeof AdminLoginRoute
   '/_authenticated/admin/funds': typeof AuthenticatedAdminFundsRoute
   '/_authenticated/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
   '/_authenticated/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/_authenticated/admin/waitlist': typeof AuthenticatedAdminWaitlistRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/documents/$id': typeof AuthenticatedAdminDocumentsIdRoute
   '/_authenticated/admin/investors/$id': typeof AuthenticatedAdminInvestorsIdRoute
@@ -161,14 +180,16 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/home'
-    | '/portfolio'
+    | '/signin'
     | '/admin'
+    | '/portfolio'
     | '/admin/login'
     | '/admin/funds'
     | '/admin/investors'
     | '/admin/onboarding'
     | '/admin/payouts'
     | '/admin/settings'
+    | '/admin/waitlist'
     | '/admin/'
     | '/admin/documents/$id'
     | '/admin/investors/$id'
@@ -177,6 +198,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/home'
+    | '/signin'
     | '/portfolio'
     | '/admin/login'
     | '/admin/funds'
@@ -184,6 +206,7 @@ export interface FileRouteTypes {
     | '/admin/onboarding'
     | '/admin/payouts'
     | '/admin/settings'
+    | '/admin/waitlist'
     | '/admin'
     | '/admin/documents/$id'
     | '/admin/investors/$id'
@@ -193,14 +216,16 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/about'
     | '/home'
-    | '/portfolio'
+    | '/signin'
     | '/_authenticated/admin'
+    | '/_authenticated/portfolio'
     | '/admin/login'
     | '/_authenticated/admin/funds'
     | '/_authenticated/admin/investors'
     | '/_authenticated/admin/onboarding'
     | '/_authenticated/admin/payouts'
     | '/_authenticated/admin/settings'
+    | '/_authenticated/admin/waitlist'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/documents/$id'
     | '/_authenticated/admin/investors/$id'
@@ -211,17 +236,17 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   HomeRoute: typeof HomeRoute
-  PortfolioRoute: typeof PortfolioRoute
+  SigninRoute: typeof SigninRoute
   AdminLoginRoute: typeof AdminLoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/portfolio': {
-      id: '/portfolio'
-      path: '/portfolio'
-      fullPath: '/portfolio'
-      preLoaderRoute: typeof PortfolioRouteImport
+    '/signin': {
+      id: '/signin'
+      path: '/signin'
+      fullPath: '/signin'
+      preLoaderRoute: typeof SigninRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home': {
@@ -259,6 +284,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/portfolio': {
+      id: '/_authenticated/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof AuthenticatedPortfolioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -271,6 +303,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/waitlist': {
+      id: '/_authenticated/admin/waitlist'
+      path: '/waitlist'
+      fullPath: '/admin/waitlist'
+      preLoaderRoute: typeof AuthenticatedAdminWaitlistRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/settings': {
@@ -345,6 +384,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminOnboardingRoute: typeof AuthenticatedAdminOnboardingRoute
   AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
+  AuthenticatedAdminWaitlistRoute: typeof AuthenticatedAdminWaitlistRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminDocumentsIdRoute: typeof AuthenticatedAdminDocumentsIdRoute
 }
@@ -356,6 +396,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminOnboardingRoute: AuthenticatedAdminOnboardingRoute,
   AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
+  AuthenticatedAdminWaitlistRoute: AuthenticatedAdminWaitlistRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminDocumentsIdRoute: AuthenticatedAdminDocumentsIdRoute,
 }
@@ -365,10 +406,12 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -379,7 +422,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   HomeRoute: HomeRoute,
-  PortfolioRoute: PortfolioRoute,
+  SigninRoute: SigninRoute,
   AdminLoginRoute: AdminLoginRoute,
 }
 export const routeTree = rootRouteImport
