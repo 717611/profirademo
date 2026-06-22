@@ -330,3 +330,59 @@
   mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
   -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
 }
+
+/* ============================================================
+   PROFIRA BACK OFFICE (admin scope)
+   ============================================================ */
+.admin-scope {
+  --background: #070809;
+  --foreground: #FFFFFF;
+  --card: #14151A;
+  --card-foreground: #FFFFFF;
+  --popover: #14151A;
+  --popover-foreground: #FFFFFF;
+  --primary: #D61F3A;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1A1B21;
+  --secondary-foreground: #FFFFFF;
+  --muted: #1A1B21;
+  --muted-foreground: #B8B8B8;
+  --accent: #D61F3A;
+  --accent-foreground: #FFFFFF;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: #1F2024;
+  --input: #1F2024;
+  --ring: rgba(214, 31, 58, 0.5);
+  --radius: 12px;
+
+  background: #070809;
+  color: #FFFFFF;
+  font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  min-height: 100dvh;
+}
+.admin-scope h1, .admin-scope h2, .admin-scope h3, .admin-scope h4 {
+  font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+@utility admin-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0) 60%), #14151A;
+  border: 1px solid #1F2024;
+  border-radius: 14px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 20px 40px -24px rgba(0,0,0,0.6);
+}
+
+@utility admin-glass {
+  background: color-mix(in oklab, #14151A 86%, transparent);
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid #1F2024;
+  border-radius: 14px;
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body, .admin-scope { background: #fff !important; color: #000 !important; }
+}
+
