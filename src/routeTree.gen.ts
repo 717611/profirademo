@@ -10,12 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SigninRouteImport } from './routes/signin'
-import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
@@ -29,11 +29,6 @@ import { Route as AuthenticatedAdminDocumentsIdRouteImport } from './routes/_aut
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
   path: '/signin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PortfolioRoute = PortfolioRouteImport.update({
-  id: '/portfolio',
-  path: '/portfolio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeRoute = HomeRouteImport.update({
@@ -59,6 +54,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin/login',
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedPortfolioRoute = AuthenticatedPortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
@@ -116,9 +116,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
-  '/portfolio': typeof PortfolioRoute
   '/signin': typeof SigninRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/portfolio': typeof AuthenticatedPortfolioRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/funds': typeof AuthenticatedAdminFundsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
@@ -133,8 +133,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
-  '/portfolio': typeof PortfolioRoute
   '/signin': typeof SigninRoute
+  '/portfolio': typeof AuthenticatedPortfolioRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/funds': typeof AuthenticatedAdminFundsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
@@ -151,9 +151,9 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
-  '/portfolio': typeof PortfolioRoute
   '/signin': typeof SigninRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
   '/admin/login': typeof AdminLoginRoute
   '/_authenticated/admin/funds': typeof AuthenticatedAdminFundsRoute
   '/_authenticated/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
@@ -170,9 +170,9 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/home'
-    | '/portfolio'
     | '/signin'
     | '/admin'
+    | '/portfolio'
     | '/admin/login'
     | '/admin/funds'
     | '/admin/investors'
@@ -187,8 +187,8 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/home'
-    | '/portfolio'
     | '/signin'
+    | '/portfolio'
     | '/admin/login'
     | '/admin/funds'
     | '/admin/investors'
@@ -204,9 +204,9 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/about'
     | '/home'
-    | '/portfolio'
     | '/signin'
     | '/_authenticated/admin'
+    | '/_authenticated/portfolio'
     | '/admin/login'
     | '/_authenticated/admin/funds'
     | '/_authenticated/admin/investors'
@@ -223,7 +223,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   HomeRoute: typeof HomeRoute
-  PortfolioRoute: typeof PortfolioRoute
   SigninRoute: typeof SigninRoute
   AdminLoginRoute: typeof AdminLoginRoute
 }
@@ -235,13 +234,6 @@ declare module '@tanstack/react-router' {
       path: '/signin'
       fullPath: '/signin'
       preLoaderRoute: typeof SigninRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/portfolio': {
-      id: '/portfolio'
-      path: '/portfolio'
-      fullPath: '/portfolio'
-      preLoaderRoute: typeof PortfolioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home': {
@@ -278,6 +270,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/login'
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/portfolio': {
+      id: '/_authenticated/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof AuthenticatedPortfolioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
@@ -385,10 +384,12 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -399,7 +400,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   HomeRoute: HomeRoute,
-  PortfolioRoute: PortfolioRoute,
   SigninRoute: SigninRoute,
   AdminLoginRoute: AdminLoginRoute,
 }

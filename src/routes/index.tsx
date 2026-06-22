@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Lock, ArrowRight } from "lucide-react";
+import { WaitlistDialog } from "@/components/waitlist-dialog";
+
 
 
 export const Route = createFileRoute("/")({
@@ -23,7 +26,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Waitlist() {
+  const [open, setOpen] = useState(false);
   return (
+
     <div className="fixed inset-0 overflow-hidden bg-black font-sans text-white">
       {/* Background: deep black + soft red ambient from top-right */}
       <div className="pointer-events-none absolute inset-0">
